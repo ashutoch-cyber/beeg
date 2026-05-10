@@ -60,8 +60,8 @@ const DEFAULT_GOALS: DailyGoals = {
 const NutritionContext = createContext<NutritionContextType | null>(null);
 
 const STORAGE_KEYS = {
-  LOGS: "@healthify_logs",
-  GOALS: "@healthify_goals",
+  LOGS: "@bee_logs",
+  GOALS: "@bee_goals",
 };
 
 function getTodayDate() {

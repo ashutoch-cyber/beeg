@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Healthify",
-    "slug": "mobile",
+    "name": "bee",
+    "slug": "bee",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "bee",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -14,16 +14,18 @@
       "backgroundColor": "#1B4332"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bee.app"
     },
     "android": {
-      "backgroundColor": "#1B4332"
+      "backgroundColor": "#1B4332",
+      "package": "com.bee.app"
     },
     "web": {
       "favicon": "./assets/images/icon.png",
       "bundler": "metro",
-      "name": "Healthify",
-      "shortName": "Healthify",
+      "name": "Bee",
+      "shortName": "Bee",
       "description": "AI-powered food tracking. Snap a photo, get instant nutrition breakdown.",
       "themeColor": "#1B4332",
       "backgroundColor": "#1B4332"
