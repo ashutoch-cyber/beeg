@@ -1,0 +1,36 @@
+Act as a Senior AI Full-Stack Engineer. I need to overhaul my current project (Beego-c6k.pages.dev) to 100% replicate the UI/UX and functionality of the "Healthify" app. Follow these technical specifications strictly to ensure accuracy and speed.
+
+### **1. AI Vision & "Logic Gate" System (The Brain)**
+- **Food vs. Non-Food Validation:** Before calculating nutrients, the model must determine if the image contains food. 
+  - If a human, pet, or inanimate object (chair, phone) is detected, return a clean UI message: "No food detected. Please snap a picture of a meal or packaged food."
+- **Multi-Ingredient Segmentation:** Solve the "Partial Detection" issue. The AI must NOT summarize a meal as a single item (e.g., just 'Carrot' for a salad). It must identify every visible component. 
+  - *Example:* For a salad, identify Lettuce, Cucumber, Feta, Olives, and Dressing separately. 
+  - *Example:* For an Indian Thali, segment Rice, Dal, Roti, and Sabzi into individual line items.
+- **Precision Naming:** Avoid generic names. If it's "Egg Biryani," it must be logged as "Egg Biryani," not just "Rice." Recognize packaged food brands and products accurately.
+
+### **2. High-Speed Scanning Workflow**
+- **Fast-Pass Logic:** Use a two-stage analysis to keep the UI snappy.
+  - **Pass 1:** Identify the dish name instantly to remove the skeleton loader.
+  - **Pass 2:** Perform the detailed nutrient breakdown in the background.
+- **Skeleton Loaders:** Implement a "Detecting Ingredients..." skeleton state immediately upon image capture to provide instant feedback.
+- **Accuracy Tips:** Include the onboarding overlays for "Tips for better accuracy" (Side views, Avoid top-down, Barcode usage) as seen in the reference video.
+
+### **3. Post-Scan "Ingredient Breakdown" UI (1:1 Match)**
+Redesign the results screen using **Tailwind CSS** to match the reference image exactly:
+- **Ingredient Table:** Title it "Ingredient breakdown." 
+  - **Rows:** Bold Ingredient Name with "Estimated Serving" as sub-text (e.g., **Paneer**, 100g).
+  - **Footer:** Add a "Total" row with a bold top separator.
+- **4-Card Macro Grid:** A 2x2 responsive grid of rounded cards:
+  - **Card 1 (Orange):** Calories (kcal) 
+  - **Card 2 (Blue):** Protein (g) 
+  - **Card 3 (Yellow):** Carbs (g) 
+  - **Card 4 (Red):** Fat (g) 
+- **Meal Type Selector:** Horizontal pill buttons for [Breakfast, Lunch, Dinner, Snack]. Active state must be **Vibrant Green (#2D6A4F)**.
+- **Sticky Actions:** "Edit with AI" and "Done" buttons must remain fixed at the bottom.
+
+### **4. Tech Stack & Styling**
+- **Colors:** Use the professional palette: Dark Green (**#1B4332**) for headers/bg and Vibrant Green (**#2D6A4F**) for primary actions.
+- **Backend (Python/Django):** Prompt the Vision API (Gemini 1.5 Flash or GPT-4o) to return a strictly structured JSON object containing `is_food: boolean` and an array of `ingredients` with `name`, `serving`, and `macros`.
+- **Transitions:** Ensure a seamless, "instant-feel" transition from the Camera UI to the Results Page.
+
+Do not simplify. Every padding, font weight, and color code from the attached references must be present.

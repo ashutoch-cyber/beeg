@@ -1,0 +1,30 @@
+Act as a Senior AI Full-Stack Developer. I need to upgrade my app (Beego-c6k.pages.dev) to exactly match the "Healthify" scanning and results experience. Follow these technical requirements strictly:
+
+### **1. High-Speed "Snap Food" Logic**
+- **Speed Optimization:** Implement a "Streaming UI" approach. As soon as the image is captured, show a "Detecting Ingredients..." skeleton loader. 
+- **Accuracy:** The backend (Python/Django) must use a Vision-to-JSON model (like Gemini 1.5 Flash or GPT-4o) to return a structured list of ingredients, weights, and nutritional data. 
+- **Segmentation:** Ensure the model can distinguish between items on a single plate (e.g., separating "Roti," "Rice," and "Curry" from an Indian Thali as seen in the video).
+
+### **2. Post-Scan "Ingredient Breakdown" UI (Critical)**
+Redesign the results screen to match the provided layout exactly:
+- **Ingredient Table:** Create a clean list with the title "Ingredient breakdown." 
+  - Each row must show the **Ingredient Name** (bold) and an **Estimated Serving** (sub-text, e.g., "1 pcs," "estimated serving").
+  - Include a "Total" row at the bottom with a bold separator.
+- **4-Card Macro Display:** Below the table, create a 2x2 grid of rounded cards:
+  - **Card 1 (Orange):** Calories (kcal) - Large number.
+  - **Card 2 (Blue):** Protein (g) - Large number.
+  - **Card 3 (Yellow):** Carbs (g) - Large number.
+  - **Card 4 (Red):** Fat (g) - Large number.
+- **Meal Type Selector:** Below the cards, add a horizontal pill-button selector for: [Breakfast, Lunch, Dinner, Snack]. The active state should be a vibrant green.
+
+### **3. UI Continuity & Transitions**
+- Use the **dark green (#1B4332)** and **vibrant green (#2D6A4F)** color scheme from the reference.
+- Add a smooth transition from the Camera UI to the Results Page. The transition should feel "instant" to the user while the data is being fetched in the background.
+- Include "Tips for Better Accuracy" overlays (Side views, Avoid top-down, Barcode usage) as shown in the video at 0:06.
+
+### **4. Technical Constraint**
+- Use **Tailwind CSS** for the layout to ensure the "4-card macro" grid is perfectly responsive.
+- Ensure the "Edit with AI" and "Done" buttons are sticky at the bottom of the screen.
+- All nutritional data must be fetched from a reliable API or LLM prompt to ensure 95%+ accuracy for Indian cuisines.
+
+Review the attached image and video for the exact padding, font weights, and color codes. Do not simplify the design; it must be a 1:1 match.

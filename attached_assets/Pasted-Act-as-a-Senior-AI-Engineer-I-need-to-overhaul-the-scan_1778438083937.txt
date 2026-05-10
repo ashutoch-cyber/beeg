@@ -1,0 +1,24 @@
+Act as a Senior AI Engineer. I need to overhaul the scanning logic of my app (Beego-c6k.pages.dev) to match the speed and high precision of Healthify.
+
+### **1. AI Vision Logic Gate (Food vs. Non-Food)**
+- **Classification First:** Before calculating calories, the AI must determine if the image contains food.
+- **Error Handling:** If the user scans a human, a pet, or a random object (like a chair or phone), the app must return a clean UI message: "No food detected. Please snap a picture of your meal or a packaged food item."
+- **Packaged Food:** The AI should recognize barcodes or packaging (e.g., a bag of chips or a protein bar) and identify the specific brand and product name accurately.
+
+### **2. Multi-Ingredient Segmentation (The "Salad" Problem)**
+- **Granular Detection:** The AI must perform deep analysis. If a salad is scanned, it must NOT just identify one item (like 'Carrot'). It must identify every visible component (e.g., Lettuce, Cucumber, Feta Cheese, Olives, Dressing).
+- **Thali/Plate Analysis:** For complex meals (like an Indian Thali), it must identify the Rice, Dal, Roti, and Sabzi as separate line items in the "Ingredient Breakdown" table.
+
+### **3. Ingredient Breakdown UI & Accuracy**
+- **Structured Data:** The output must display the "Ingredient breakdown" table exactly as shown in the reference image:
+    - **Ingredient Name:** (e.g., "Mixed Bean Salad")
+    - **Serving Size:** (e.g., "1 bowl" or "estimated serving")
+- **Macro Cards:** Display the 2x2 grid for Calories (Orange), Protein (Blue), Carbs (Yellow), and Fat (Red).
+- **Naming Precision:** Do not use generic names. If the AI detects "Egg Biryani," it should list "Egg Biryani" specifically, not just "Rice."
+
+### **4. Tech Stack & Performance**
+- **Prompt Engineering:** Set up the backend (Python/Django) to prompt the Vision API (Gemini 1.5 Pro/Flash) to return a JSON object with a boolean `is_food` and an array `ingredients`.
+- **Latency:** Use a "Fast-Pass" analysis. The first pass should identify the dish name (Instant), and the second pass should calculate the detailed breakdown (background) to keep the UI snappy.
+- **Frontend:** Ensure the UI reflects the colors, padding, and "Meal Type" selection (Breakfast, Lunch, Dinner, Snack) from the Healthify reference.
+
+Check the provided video and image to ensure the "Ingredient Breakdown" table font sizes and the "Total" row separators are a 1:1 match.

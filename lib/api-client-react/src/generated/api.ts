@@ -5,18 +5,26 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  FoodError,
+  HealthStatus,
+  ScanFoodRequest,
+  ScanFoodResult,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +107,89 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Scan food image and get nutritional breakdown
+ */
+export const getScanFoodUrl = () => {
+  return `/api/food/scan`;
+};
+
+export const scanFood = async (
+  scanFoodRequest: ScanFoodRequest,
+  options?: RequestInit,
+): Promise<ScanFoodResult> => {
+  return customFetch<ScanFoodResult>(getScanFoodUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(scanFoodRequest),
+  });
+};
+
+export const getScanFoodMutationOptions = <
+  TError = ErrorType<FoodError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof scanFood>>,
+    TError,
+    { data: BodyType<ScanFoodRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof scanFood>>,
+  TError,
+  { data: BodyType<ScanFoodRequest> },
+  TContext
+> => {
+  const mutationKey = ["scanFood"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof scanFood>>,
+    { data: BodyType<ScanFoodRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return scanFood(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ScanFoodMutationResult = NonNullable<
+  Awaited<ReturnType<typeof scanFood>>
+>;
+export type ScanFoodMutationBody = BodyType<ScanFoodRequest>;
+export type ScanFoodMutationError = ErrorType<FoodError>;
+
+/**
+ * @summary Scan food image and get nutritional breakdown
+ */
+export const useScanFood = <
+  TError = ErrorType<FoodError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof scanFood>>,
+    TError,
+    { data: BodyType<ScanFoodRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof scanFood>>,
+  TError,
+  { data: BodyType<ScanFoodRequest> },
+  TContext
+> => {
+  return useMutation(getScanFoodMutationOptions(options));
+};

@@ -1,0 +1,33 @@
+Act as a Senior Full-Stack Engineer and AI Specialist. I want to transform my current project (deployed at Beego-c6k.pages.dev) into a high-fidelity clone of the "Healthify" app shown in the provided reference materials. 
+
+### **1. Core UI/UX Overhaul (Dashboard)**
+- **Calorie Tracker:** Implement a circular progress ring on the dashboard showing "Consumed of Goal" (e.g., 935 / 2500 Cal).
+- **Macro Bars:** Directly below the circle, add four horizontal progress bars for:
+  - **Protein** (Target vs. Actual)
+  - **Carbs** (Target vs. Actual)
+  - **Fat** (Target vs. Actual)
+  - **Fibre** (Target vs. Actual) - Use the specific 121% style for over-consumption.
+- **Navigation:** Use the dark green/white "Healthify" color palette and rounded card design.
+
+### **2. "Snap Food" AI Scanning System**
+- **Camera Interface:** Build a "Snap Food" overlay that opens the device camera or allows selection from "Google Photos" (see video at 0:31).
+- **AI Modeling (Computer Vision):** Integrate a Vision API (like Gemini 1.5 Pro/Flash, GPT-4o, or a specialized Nutrition API) to perform "Food Modeling."
+- **Ingredient Segmentation:** The AI must NOT just return the dish name. It must perform image segmentation to identify individual components. 
+  - *Example (from video 0:43):* If a "Healthy Mixed Bean and Paneer Salad" is scanned, the model must break it down into:
+    - Carrot (15 Cal)
+    - Cucumber (11 Cal)
+    - Paneer (148 Cal)
+    - Mixed Bean Salad (253 Cal)
+    - Dried Pomegranate Seeds (88 Cal)
+- **Log Logic:** Allow the user to "Log as Lunch" or "Morning Snack" with a single click after the AI detects the ingredients.
+
+### **3. Feature parity (Snap Gallery)**
+- Implement the "Snap Gallery" view (video 0:25) that displays recently captured food photos with an "Auto-Tracked" status badge.
+- Ensure the app can analyze metadata from uploaded photos to suggest the date and meal type (Breakfast/Lunch/Dinner) automatically.
+
+### **4. Tech Stack Requirements**
+- Maintain the current architecture of Beego-c6k.pages.dev (React/Next.js frontend).
+- For the backend/AI, use [Insert your backend, e.g., Python/Django] to handle the image processing and calorie calculation logic.
+- Ensure all components are responsive and mobile-first.
+
+Don't hallucinate features—stick to the layout and breakdown logic shown in the Healthify app UI.

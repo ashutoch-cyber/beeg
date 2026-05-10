@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: food
+    description: Food scanning and nutrition operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /food/scan:
+    post:
+      operationId: scanFood
+      tags: [food]
+      summary: Scan food image and get nutritional breakdown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanFoodRequest"
+      responses:
+        "200":
+          description: Food scan results with ingredient breakdown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanFoodResult"
+        "400":
+          description: No food detected or invalid image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoodError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +59,79 @@ components:
           type: string
       required:
         - status
-
+    ScanFoodRequest:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64 encoded image data
+        mimeType:
+          type: string
+          description: MIME type of the image (e.g. image/jpeg)
+      required:
+        - imageBase64
+        - mimeType
+    FoodIngredient:
+      type: object
+      properties:
+        name:
+          type: string
+        serving:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+      required:
+        - name
+        - serving
+        - calories
+        - protein
+        - carbs
+        - fat
+    ScanFoodResult:
+      type: object
+      properties:
+        isFood:
+          type: boolean
+        dishName:
+          type: string
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/FoodIngredient"
+        totals:
+          type: object
+          properties:
+            calories:
+              type: number
+            protein:
+              type: number
+            carbs:
+              type: number
+            fat:
+              type: number
+          required:
+            - calories
+            - protein
+            - carbs
+            - fat
+      required:
+        - isFood
+        - dishName
+        - ingredients
+        - totals
+    FoodError:
+      type: object
+      properties:
+        error:
+          type: string
+        isFood:
+          type: boolean
+      required:
+        - error
+        - isFood

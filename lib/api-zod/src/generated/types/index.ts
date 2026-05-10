@@ -6,4 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./foodError";
+export * from "./foodIngredient";
 export * from "./healthStatus";
+export * from "./scanFoodRequest";
+export * from "./scanFoodResult";
+export * from "./scanFoodResultTotals";

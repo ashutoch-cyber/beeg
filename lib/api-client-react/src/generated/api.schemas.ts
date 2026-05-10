@@ -8,3 +8,38 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ScanFoodRequest {
+  /** Base64 encoded image data */
+  imageBase64: string;
+  /** MIME type of the image (e.g. image/jpeg) */
+  mimeType: string;
+}
+
+export interface FoodIngredient {
+  name: string;
+  serving: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export type ScanFoodResultTotals = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+export interface ScanFoodResult {
+  isFood: boolean;
+  dishName: string;
+  ingredients: FoodIngredient[];
+  totals: ScanFoodResultTotals;
+}
+
+export interface FoodError {
+  error: string;
+  isFood: boolean;
+}

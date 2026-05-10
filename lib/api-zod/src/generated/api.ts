@@ -14,3 +14,32 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Scan food image and get nutritional breakdown
+ */
+export const ScanFoodBody = zod.object({
+  imageBase64: zod.string().describe("Base64 encoded image data"),
+  mimeType: zod.string().describe("MIME type of the image (e.g. image\/jpeg)"),
+});
+
+export const ScanFoodResponse = zod.object({
+  isFood: zod.boolean(),
+  dishName: zod.string(),
+  ingredients: zod.array(
+    zod.object({
+      name: zod.string(),
+      serving: zod.string(),
+      calories: zod.number(),
+      protein: zod.number(),
+      carbs: zod.number(),
+      fat: zod.number(),
+    }),
+  ),
+  totals: zod.object({
+    calories: zod.number(),
+    protein: zod.number(),
+    carbs: zod.number(),
+    fat: zod.number(),
+  }),
+});
