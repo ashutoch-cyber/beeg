@@ -20,7 +20,13 @@
       "backgroundColor": "#1B4332"
     },
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/icon.png",
+      "bundler": "metro",
+      "name": "Healthify",
+      "shortName": "Healthify",
+      "description": "AI-powered food tracking. Snap a photo, get instant nutrition breakdown.",
+      "themeColor": "#1B4332",
+      "backgroundColor": "#1B4332"
     },
     "plugins": [
       [

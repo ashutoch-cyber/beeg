@@ -1,458 +1,517 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>APP_NAME_PLACEHOLDER</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='180' height='180' rx='36' fill='%23FF3C00'/%3E%3C/svg%3E" />
+    <title>Healthify — AI Food Tracker</title>
+    <meta name="description" content="Snap a photo of your meal and get instant nutrition breakdown powered by AI." />
+    <meta name="theme-color" content="#1B4332" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Healthify" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='180' height='180' rx='36' fill='%231B4332'/%3E%3Ctext x='90' y='120' font-size='90' text-anchor='middle' fill='white'%3E🥗%3C/text%3E%3C/svg%3E" />
     <style>
-      * {
-        box-sizing: border-box;
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --dark-green: #1B4332;
+        --vibrant-green: #2D6A4F;
+        --light-green: #52B788;
+        --pale-green: #D8F3DC;
+        --text: #1a1a1a;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --card: #ffffff;
+        --bg: #f9fafb;
       }
+
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        margin: 0;
-        padding: 32px 20px;
-        text-align: center;
-        background: #fff;
-        color: #222;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
         line-height: 1.5;
         min-height: 100vh;
       }
-      .wrapper {
-        max-width: 480px;
-        margin: 0 auto;
-      }
-      h1 {
-        font-size: 26px;
-        font-weight: 600;
-        margin: 0;
-        color: #111;
-      }
-      .subtitle {
-        font-size: 15px;
-        color: #666;
-        margin-top: 8px;
-        margin-bottom: 32px;
-      }
-      .loading {
-        display: none;
-        margin: 60px 0;
-      }
-      .spinner {
-        border: 2px solid #ddd;
-        border-top-color: #333;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        animation: spin 0.8s linear infinite;
-        margin: 20px auto;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      .loading-text {
-        font-size: 16px;
-        color: #444;
-      }
-      .content {
-        display: block;
-      }
 
-      .steps-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .step {
-        padding: 24px;
-        border: 1px solid #ddd;
-        border-radius: 12px;
+      /* ── Hero ── */
+      .hero {
+        background: linear-gradient(160deg, var(--dark-green) 0%, var(--vibrant-green) 100%);
+        color: white;
+        padding: 64px 24px 80px;
         text-align: center;
-        background: #fafafa;
+        position: relative;
+        overflow: hidden;
       }
-      .step-header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
+      .hero::after {
+        content: "";
+        position: absolute;
+        bottom: -1px; left: 0; right: 0;
+        height: 48px;
+        background: var(--bg);
+        border-radius: 48px 48px 0 0;
+      }
+      .app-icon {
+        width: 88px; height: 88px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 22px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 44px;
+        margin: 0 auto 20px;
+        border: 1px solid rgba(255,255,255,0.25);
+        backdrop-filter: blur(4px);
+      }
+      .hero h1 {
+        font-size: clamp(32px, 6vw, 52px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
         margin-bottom: 12px;
       }
-      .step-number {
-        width: 28px;
-        height: 28px;
-        border: 1px solid #999;
-        border-radius: 50%;
+      .hero p {
+        font-size: clamp(15px, 2vw, 18px);
+        color: rgba(255,255,255,0.82);
+        max-width: 480px;
+        margin: 0 auto 32px;
+      }
+      .hero-btns {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
-        flex-shrink: 0;
-        color: #555;
-      }
-      .step-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-        color: #222;
-      }
-      .step-description {
-        font-size: 14px;
-        margin-bottom: 16px;
-        color: #666;
-      }
-
-      .store-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        gap: 12px;
         justify-content: center;
         flex-wrap: wrap;
       }
-      .store-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px 20px;
-        font-size: 14px;
-        font-weight: 500;
-        border: 1px solid #ccc;
-        border-radius: 8px;
+      .btn-primary {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 14px 28px;
+        background: white;
+        color: var(--dark-green);
+        font-size: 15px; font-weight: 700;
+        border-radius: 12px;
         text-decoration: none;
-        color: #333;
-        background: #fff;
-        transition: all 0.15s;
+        border: none; cursor: pointer;
+        transition: opacity 0.15s, transform 0.15s;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
       }
-      .store-button:hover {
-        background: #f5f5f5;
-        border-color: #999;
+      .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+      .btn-secondary {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 14px 28px;
+        background: rgba(255,255,255,0.12);
+        color: white;
+        font-size: 15px; font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        border: 1px solid rgba(255,255,255,0.28);
+        cursor: pointer;
+        transition: background 0.15s;
       }
-      .store-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 8px 0;
-        font-size: 13px;
-        font-weight: 400;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-        color: #666;
-        background: none;
-        border: none;
-        transition: color 0.15s;
+      .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+      /* ── Badges ── */
+      .badges {
+        display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+        padding: 24px 24px 0;
       }
-      .store-link:hover {
-        color: #333;
-      }
-      .store-link .store-icon {
-        width: 14px;
-        height: 14px;
-      }
-      .store-icon {
-        width: 18px;
-        height: 18px;
+      .badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px;
+        background: var(--pale-green);
+        color: var(--vibrant-green);
+        font-size: 13px; font-weight: 600;
+        border-radius: 100px;
       }
 
-      .qr-section {
-        background: #333;
-        color: #fff;
-        border-color: #333;
+      /* ── Section ── */
+      .section {
+        padding: 48px 24px;
+        max-width: 900px;
+        margin: 0 auto;
       }
-      .qr-section .step-number {
-        border-color: rgba(255, 255, 255, 0.5);
-        color: #fff;
+      .section-title {
+        font-size: 22px; font-weight: 700;
+        color: var(--dark-green);
+        margin-bottom: 20px;
       }
-      .qr-section .step-title {
-        color: #fff;
+
+      /* ── Device cards ── */
+      .device-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
       }
-      .qr-section .step-description {
-        color: rgba(255, 255, 255, 0.7);
+      .device-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
-      .qr-code {
-        width: 180px;
-        height: 180px;
-        margin: 0 auto 16px;
-        background: #fff;
-        border-radius: 8px;
-        padding: 12px;
+      .device-header {
+        display: flex; align-items: center; gap: 12px;
       }
-      .qr-code canvas {
-        width: 100%;
-        height: 100%;
+      .device-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
       }
-      .open-button {
-        display: inline-block;
-        padding: 12px 24px;
-        font-size: 14px;
-        font-weight: 500;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+      .device-name {
+        font-size: 16px; font-weight: 700;
+        color: var(--text);
+      }
+      .device-sub {
+        font-size: 12px; color: var(--muted);
+      }
+      .device-steps {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .device-steps li {
+        display: flex; gap: 9px;
+        font-size: 13px; color: #374151;
+        line-height: 1.4;
+      }
+      .step-dot {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: var(--pale-green);
+        color: var(--vibrant-green);
+        font-size: 11px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .device-action {
+        margin-top: 4px;
+      }
+      .device-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 16px;
+        background: var(--dark-green);
+        color: white;
+        font-size: 13px; font-weight: 600;
         border-radius: 8px;
         text-decoration: none;
-        color: #333;
-        background: #fff;
+        border: none; cursor: pointer;
         transition: opacity 0.15s;
       }
-      .open-button:hover {
-        opacity: 0.9;
+      .device-btn:hover { opacity: 0.88; }
+      .device-btn.outline {
+        background: transparent;
+        color: var(--dark-green);
+        border: 1.5px solid var(--dark-green);
       }
 
-      /* Desktop styles */
-      @media (min-width: 768px) {
-        body {
-          padding: 48px 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .wrapper {
-          max-width: 720px;
-        }
-        h1 {
-          font-size: 32px;
-          margin-bottom: 10px;
-        }
-        .subtitle {
-          font-size: 16px;
-          margin-bottom: 40px;
-        }
-        .steps-container {
-          flex-direction: row;
-          gap: 20px;
-          align-items: stretch;
-        }
-        .step {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          padding: 28px;
-        }
-        .step-description {
-          flex-grow: 1;
-        }
-        .store-buttons {
-          flex-direction: column;
-          gap: 10px;
-        }
-        .qr-code {
-          width: 200px;
-          height: 200px;
-        }
+      /* ── QR section ── */
+      .qr-section {
+        background: var(--dark-green);
+        border-radius: 20px;
+        padding: 32px 28px;
+        display: flex;
+        gap: 32px;
+        align-items: center;
+        flex-wrap: wrap;
+        color: white;
+      }
+      .qr-text { flex: 1; min-width: 200px; }
+      .qr-text h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+      .qr-text p { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 16px; }
+      .store-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .store-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 18px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 10px;
+        color: white;
+        font-size: 13px; font-weight: 600;
+        text-decoration: none;
+        transition: background 0.15s;
+      }
+      .store-btn:hover { background: rgba(255,255,255,0.22); }
+      .qr-box {
+        width: 160px; height: 160px;
+        background: white;
+        border-radius: 12px;
+        padding: 10px;
+        flex-shrink: 0;
       }
 
-      /* Large desktop */
-      @media (min-width: 1024px) {
-        .wrapper {
-          max-width: 800px;
-        }
-        h1 {
-          font-size: 36px;
-        }
-        .steps-container {
-          gap: 28px;
-        }
-        .step {
-          padding: 32px;
-        }
+      /* ── Features ── */
+      .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+      .feature {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+      }
+      .feature-icon { font-size: 28px; margin-bottom: 8px; }
+      .feature-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+      .feature-desc { font-size: 13px; color: var(--muted); }
+
+      /* ── Footer ── */
+      footer {
+        text-align: center;
+        padding: 32px 24px;
+        font-size: 13px;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
       }
 
-      /* Dark mode */
-      @media (prefers-color-scheme: dark) {
-        body {
-          background: #0d0d0d;
-          color: #e0e0e0;
-        }
-        h1 {
-          color: #f5f5f5;
-        }
-        .subtitle {
-          color: #999;
-        }
-        .spinner {
-          border-color: #444;
-          border-top-color: #ccc;
-        }
-        .loading-text {
-          color: #aaa;
-        }
-        .step {
-          border-color: #333;
-          background: #1a1a1a;
-        }
-        .step-number {
-          border-color: #666;
-          color: #bbb;
-        }
-        .step-title {
-          color: #f0f0f0;
-        }
-        .step-description {
-          color: #888;
-        }
-        .store-button {
-          border-color: #444;
-          color: #e0e0e0;
-          background: #222;
-        }
-        .store-button:hover {
-          background: #2a2a2a;
-          border-color: #666;
-        }
-        .store-link {
-          color: #888;
-        }
-        .store-link:hover {
-          color: #ccc;
-        }
-        .qr-section {
-          background: #111;
-          border-color: #333;
-        }
-        .qr-section .step-number {
-          border-color: rgba(255, 255, 255, 0.4);
-        }
-        .qr-section .step-description {
-          color: rgba(255, 255, 255, 0.6);
-        }
-        .open-button {
-          background: #f0f0f0;
-          color: #111;
-        }
-        .open-button:hover {
-          background: #e0e0e0;
-        }
+      /* ── Install banner (shown via JS when PWA installable) ── */
+      #install-banner {
+        display: none;
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: var(--dark-green); color: white;
+        padding: 14px 22px; border-radius: 14px;
+        font-size: 14px; font-weight: 600;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        display: none; align-items: center; gap: 12px;
+        z-index: 100; white-space: nowrap;
+      }
+      #install-banner button {
+        background: white; color: var(--dark-green);
+        border: none; padding: 8px 16px; border-radius: 8px;
+        font-weight: 700; cursor: pointer; font-size: 13px;
+      }
+      #dismiss-install {
+        background: none !important; color: rgba(255,255,255,0.7) !important;
+        padding: 0 !important;
+      }
+
+      @media (max-width: 480px) {
+        .hero { padding: 48px 20px 72px; }
+        .qr-section { flex-direction: column; }
+        .qr-box { width: 140px; height: 140px; }
       }
     </style>
   </head>
   <body>
-    <div class="wrapper">
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <div class="loading-text">Opening in Expo Go...</div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="app-icon">🥗</div>
+      <h1>Healthify</h1>
+      <p>AI-powered food tracking. Snap a photo, get an instant full nutrition breakdown.</p>
+      <div class="hero-btns">
+        <a href="BASE_URL_PLACEHOLDER/web" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Open Web App
+        </a>
+        <a href="#mobile" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+          Get on Phone
+        </a>
       </div>
+    </div>
 
-      <div class="content" id="content">
-        <h1>APP_NAME_PLACEHOLDER</h1>
-        <p class="subtitle">Preview this app on your phone</p>
+    <div class="badges">
+      <span class="badge">✦ Free to use</span>
+      <span class="badge">🤖 Gemini AI Vision</span>
+      <span class="badge">📊 Full macros</span>
+      <span class="badge">📷 Photo scanning</span>
+    </div>
 
-        <div class="steps-container">
-          <div class="step">
-            <div class="step-header">
-              <div class="step-number">1</div>
-              <h2 class="step-title">Download Expo Go</h2>
-            </div>
-            <p class="step-description">
-              Expo Go is a free app to test mobile apps
-            </p>
-            <div class="store-buttons" id="store-buttons">
-              <a
-                id="app-store-btn"
-                href="https://apps.apple.com/app/id982107779"
-                class="store-button"
-                target="_blank"
-              >
-                <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path
-                    d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"
-                  />
-                </svg>
-                App Store
-              </a>
-              <a
-                id="play-store-btn"
-                href="https://play.google.com/store/apps/details?id=host.exp.exponent"
-                class="store-button"
-                target="_blank"
-              >
-                <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path
-                    d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"
-                  />
-                </svg>
-                Google Play
-              </a>
-            </div>
-          </div>
-
-          <div class="step qr-section">
-            <div class="step-header">
-              <div class="step-number">2</div>
-              <h2 class="step-title">Scan QR Code</h2>
-            </div>
-            <p class="step-description">Use your phone's camera or Expo Go</p>
-            <div class="qr-code" id="qr-code"></div>
-            <a href="exps://EXPS_URL_PLACEHOLDER" class="open-button"
-              >Open in Expo Go</a
-            >
-          </div>
+    <!-- Features -->
+    <div class="section">
+      <div class="section-title">What you can do</div>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📸</div>
+          <div class="feature-title">Snap to Track</div>
+          <div class="feature-desc">Take a photo of any meal — AI identifies every ingredient separately.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-title">Daily Goals</div>
+          <div class="feature-desc">Set your calorie and macro targets. See your progress in real-time.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📈</div>
+          <div class="feature-title">7-Day Trends</div>
+          <div class="feature-desc">Bar chart showing calorie and macro history for the past week.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🖼️</div>
+          <div class="feature-title">Snap Gallery</div>
+          <div class="feature-desc">All your food photos in one place, auto-tagged with nutrition data.</div>
         </div>
       </div>
+    </div>
+
+    <!-- Device guide -->
+    <div class="section" id="mobile">
+      <div class="section-title">Use Healthify on any device</div>
+      <div class="device-grid">
+
+        <!-- Web / Desktop -->
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon" style="background:#EFF6FF;">🖥️</div>
+            <div>
+              <div class="device-name">Mac & Windows</div>
+              <div class="device-sub">Any desktop browser</div>
+            </div>
+          </div>
+          <ul class="device-steps">
+            <li><span class="step-dot">1</span>Click <strong>Open Web App</strong> above — no install needed</li>
+            <li><span class="step-dot">2</span>Use it directly in Chrome, Safari, Firefox, or Edge</li>
+            <li><span class="step-dot">3</span>To install: click the ⬇ icon in the address bar → <em>Install app</em></li>
+          </ul>
+          <div class="device-action">
+            <a href="BASE_URL_PLACEHOLDER/web" class="device-btn">Open Web App →</a>
+          </div>
+        </div>
+
+        <!-- iPhone / iPad -->
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon" style="background:#F5F3FF;">🍎</div>
+            <div>
+              <div class="device-name">iPhone &amp; iPad</div>
+              <div class="device-sub">iOS 16+</div>
+            </div>
+          </div>
+          <ul class="device-steps">
+            <li><span class="step-dot">1</span>Open Safari and go to this page</li>
+            <li><span class="step-dot">2</span>Tap the <strong>Share</strong> button (box with arrow ↑)</li>
+            <li><span class="step-dot">3</span>Tap <strong>Add to Home Screen</strong> → Add</li>
+            <li><span class="step-dot">4</span>Launch Healthify from your home screen like a native app</li>
+          </ul>
+          <div class="device-action" style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="BASE_URL_PLACEHOLDER/web" class="device-btn">Open in Safari →</a>
+            <a href="exps://EXPS_URL_PLACEHOLDER" class="device-btn outline" id="expo-go-ios">Expo Go</a>
+          </div>
+        </div>
+
+        <!-- Android -->
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon" style="background:#F0FDF4;">🤖</div>
+            <div>
+              <div class="device-name">Android</div>
+              <div class="device-sub">Android 8+</div>
+            </div>
+          </div>
+          <ul class="device-steps">
+            <li><span class="step-dot">1</span>Open Chrome and visit this page</li>
+            <li><span class="step-dot">2</span>Tap the <strong>⋮ menu</strong> (three dots, top-right)</li>
+            <li><span class="step-dot">3</span>Tap <strong>Add to Home screen</strong> → Install</li>
+            <li><span class="step-dot">4</span>Healthify appears on your home screen — opens full-screen</li>
+          </ul>
+          <div class="device-action" style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="BASE_URL_PLACEHOLDER/web" class="device-btn">Open in Chrome →</a>
+            <a href="exps://EXPS_URL_PLACEHOLDER" class="device-btn outline" id="expo-go-android">Expo Go</a>
+          </div>
+        </div>
+
+        <!-- Tablet / TV / Other -->
+        <div class="device-card">
+          <div class="device-header">
+            <div class="device-icon" style="background:#FFF7ED;">📱</div>
+            <div>
+              <div class="device-name">Tablets &amp; other</div>
+              <div class="device-sub">Any modern browser</div>
+            </div>
+          </div>
+          <ul class="device-steps">
+            <li><span class="step-dot">1</span>Open any browser on your tablet</li>
+            <li><span class="step-dot">2</span>Navigate to this page and tap <strong>Open Web App</strong></li>
+            <li><span class="step-dot">3</span>The app is fully responsive — works on any screen size</li>
+            <li><span class="step-dot">4</span>Install via browser menu for an app-like experience</li>
+          </ul>
+          <div class="device-action">
+            <a href="BASE_URL_PLACEHOLDER/web" class="device-btn">Open Web App →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Expo Go QR -->
+    <div class="section" style="padding-top:0">
+      <div class="qr-section">
+        <div class="qr-text">
+          <h3>Prefer the native experience?</h3>
+          <p>Scan the QR code with your phone to open Healthify directly in the <strong>Expo Go</strong> app for full native performance with camera access.</p>
+          <div class="store-row">
+            <a href="https://apps.apple.com/app/id982107779" class="store-btn" target="_blank">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              App Store
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" class="store-btn" target="_blank">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+              Google Play
+            </a>
+          </div>
+        </div>
+        <div class="qr-box" id="qr-code"></div>
+      </div>
+    </div>
+
+    <footer>
+      Built with Expo &amp; Gemini AI · Works on every device · No account needed
+    </footer>
+
+    <!-- PWA install banner -->
+    <div id="install-banner" role="banner">
+      📲 Install Healthify as an app
+      <button id="install-btn">Install</button>
+      <button id="dismiss-install">✕</button>
     </div>
 
     <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
     <script>
       (function () {
-        const ua = navigator.userAgent;
-        const loadingEl = document.getElementById("loading");
-        const contentEl = document.getElementById("content");
-
-        const isAndroid = /Android/i.test(ua);
-        const isIOS =
-          /iPhone|iPad|iPod/i.test(ua) ||
-          (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
         const deepLink = "exps://EXPS_URL_PLACEHOLDER";
 
-        // Adjust store buttons based on platform
-        const appStoreBtn = document.getElementById("app-store-btn");
-        const playStoreBtn = document.getElementById("play-store-btn");
-        const storeButtonsContainer = document.getElementById("store-buttons");
-
-        if (isIOS) {
-          playStoreBtn.className = "store-link";
-          storeButtonsContainer.appendChild(playStoreBtn);
-        } else if (isAndroid) {
-          appStoreBtn.className = "store-link";
-          storeButtonsContainer.insertBefore(playStoreBtn, appStoreBtn);
+        // QR code
+        if (typeof QRCodeStyling !== "undefined") {
+          const qrCode = new QRCodeStyling({
+            width: 400, height: 400,
+            data: deepLink,
+            dotsOptions: { color: "#1B4332", type: "rounded" },
+            backgroundOptions: { color: "#ffffff" },
+            cornersSquareOptions: { type: "extra-rounded" },
+            cornersDotOptions: { type: "dot" },
+            qrOptions: { errorCorrectionLevel: "H" },
+          });
+          qrCode.append(document.getElementById("qr-code"));
         }
 
-        const qrCode = new QRCodeStyling({
-          width: 400,
-          height: 400,
-          data: deepLink,
-          dotsOptions: {
-            color: "#333333",
-            type: "rounded",
-          },
-          backgroundOptions: {
-            color: "#ffffff",
-          },
-          cornersSquareOptions: {
-            type: "extra-rounded",
-          },
-          cornersDotOptions: {
-            type: "dot",
-          },
-          qrOptions: {
-            errorCorrectionLevel: "H",
-          },
+        // PWA install prompt
+        let deferredPrompt = null;
+        const banner = document.getElementById("install-banner");
+        const installBtn = document.getElementById("install-btn");
+        const dismissBtn = document.getElementById("dismiss-install");
+
+        window.addEventListener("beforeinstallprompt", (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          banner.style.display = "flex";
         });
 
-        qrCode.append(document.getElementById("qr-code"));
+        installBtn.addEventListener("click", async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          banner.style.display = "none";
+        });
 
+        dismissBtn.addEventListener("click", () => {
+          banner.style.display = "none";
+        });
+
+        // On mobile, auto-redirect to Expo Go after a short delay
+        const ua = navigator.userAgent;
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
         if (isAndroid || isIOS) {
-          loadingEl.style.display = "block";
-          contentEl.style.display = "none";
-          window.location.href = deepLink;
-          setTimeout(function () {
-            loadingEl.style.display = "none";
-            contentEl.style.display = "block";
-          }, 500);
+          setTimeout(() => { window.location.href = deepLink; }, 800);
         }
       })();
     </script>

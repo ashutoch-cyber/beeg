@@ -1,12 +1,11 @@
 /**
  * Standalone production server for Expo static builds.
  *
- * Serves the output of build.js (static-build/) with two special routes:
+ * Routes:
+ * - GET /web or /web/* → serves the Expo web export (SPA)
  * - GET / or /manifest with expo-platform header → platform manifest JSON
  * - GET / without expo-platform → landing page HTML
- * Everything else falls through to static file serving from ./static-build/.
- *
- * Zero external dependencies — uses only Node.js built-ins (http, fs, path).
+ * - Everything else → static file serving from ./static-build/
  */
 
 const http = require("http");
@@ -14,6 +13,7 @@ const fs = require("fs");
 const path = require("path");
 
 const STATIC_ROOT = path.resolve(__dirname, "..", "static-build");
+const WEB_ROOT = path.join(STATIC_ROOT, "web");
 const TEMPLATE_PATH = path.resolve(__dirname, "templates", "landing-page.html");
 const basePath = (process.env.BASE_PATH || "/").replace(/\/+$/, "");
 
@@ -33,6 +33,7 @@ const MIME_TYPES = {
   ".ttf": "font/ttf",
   ".otf": "font/otf",
   ".map": "application/json",
+  ".webmanifest": "application/manifest+json",
 };
 
 function getAppName() {
@@ -81,6 +82,40 @@ function serveLandingPage(req, res, landingPageTemplate, appName) {
   res.end(html);
 }
 
+function serveWebApp(urlPath, res) {
+  if (!fs.existsSync(WEB_ROOT)) {
+    res.writeHead(404, { "content-type": "text/plain" });
+    res.end("Web app not built yet. Run the build first.");
+    return;
+  }
+
+  const subPath = urlPath.replace(/^\/web\/?/, "") || "";
+  let filePath = path.join(WEB_ROOT, subPath);
+
+  if (!filePath.startsWith(WEB_ROOT)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
+
+  // SPA fallback: if file doesn't exist, serve index.html
+  if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(WEB_ROOT, "index.html");
+  }
+
+  if (!fs.existsSync(filePath)) {
+    res.writeHead(404);
+    res.end("Not Found");
+    return;
+  }
+
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || "application/octet-stream";
+  const content = fs.readFileSync(filePath);
+  res.writeHead(200, { "content-type": contentType });
+  res.end(content);
+}
+
 function serveStaticFile(urlPath, res) {
   const safePath = path.normalize(urlPath).replace(/^(\.\.(\/|\\|$))+/, "");
   const filePath = path.join(STATIC_ROOT, safePath);
@@ -113,6 +148,11 @@ const server = http.createServer((req, res) => {
 
   if (basePath && pathname.startsWith(basePath)) {
     pathname = pathname.slice(basePath.length) || "/";
+  }
+
+  // Web app routes
+  if (pathname === "/web" || pathname.startsWith("/web/")) {
+    return serveWebApp(pathname, res);
   }
 
   if (pathname === "/" || pathname === "/manifest") {
