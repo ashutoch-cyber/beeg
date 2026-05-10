@@ -31,6 +31,7 @@ function RootLayoutNav() {
       <Stack.Screen name="log-confirm" options={{ headerShown: false, presentation: "modal" }} />
       <Stack.Screen name="goals" options={{ headerShown: false, presentation: "modal" }} />
       <Stack.Screen name="meal-detail" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="weekly-summary" options={{ headerShown: false, presentation: "modal" }} />
     </Stack>
   );
 }

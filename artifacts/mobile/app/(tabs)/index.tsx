@@ -57,15 +57,20 @@ export default function DashboardScreen() {
             Today's Nutrition
           </Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.goalBtn,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-          onPress={() => router.push("/goals")}
-        >
-          <Feather name="target" size={20} color={colors.vibrantGreen} />
-        </TouchableOpacity>
+        <View style={styles.headerBtns}>
+          <TouchableOpacity
+            style={[styles.goalBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push("/weekly-summary")}
+          >
+            <Feather name="bar-chart-2" size={20} color={colors.vibrantGreen} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.goalBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push("/goals")}
+          >
+            <Feather name="target" size={20} color={colors.vibrantGreen} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Calorie Ring Card */}
@@ -270,6 +275,7 @@ const styles = StyleSheet.create({
   },
   greeting: { fontSize: 13 },
   title: { fontSize: 24, marginTop: 2 },
+  headerBtns: { flexDirection: "row", gap: 8 },
   goalBtn: {
     width: 44,
     height: 44,
