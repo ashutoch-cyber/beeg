@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 
 type ScanState = "idle" | "detecting" | "result" | "error";
@@ -50,15 +51,27 @@ function getMealTypeFromHour(): MealType {
 export default function SnapScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { todayScans, scanLimit, addScan } = useNutrition();
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedMeal, setSelectedMeal] = useState<MealType>(getMealTypeFromHour());
 
+  const atLimit = scanLimit > 0 && todayScans >= scanLimit;
+  const nearLimit = scanLimit > 0 && !atLimit && todayScans >= scanLimit * 0.8;
+
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
   const pickImage = async (fromCamera: boolean) => {
+    if (atLimit) {
+      Alert.alert(
+        "Daily limit reached",
+        `You've used all ${scanLimit} scans for today. Update your limit in Goals & Usage.`,
+        [{ text: "OK" }]
+      );
+      return;
+    }
     let pickerResult: ImagePicker.ImagePickerResult;
     if (fromCamera) {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
@@ -119,6 +132,7 @@ export default function SnapScreen() {
 
       setResult(data as ScanResult);
       setScanState("result");
+      await addScan();
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -170,6 +184,18 @@ export default function SnapScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Limit warning banner */}
+        {(atLimit || nearLimit) && scanState === "idle" && (
+          <View style={[styles.limitBanner, { backgroundColor: atLimit ? "#FFF3F3" : "#FFFBEB", borderColor: atLimit ? "#FFCDD2" : "#FFE082" }]}>
+            <Feather name="alert-triangle" size={16} color={atLimit ? "#F44336" : "#F59E0B"} />
+            <Text style={[styles.limitBannerText, { color: atLimit ? "#F44336" : "#92400E", fontFamily: "Inter_500Medium" }]}>
+              {atLimit
+                ? `Daily limit reached (${todayScans}/${scanLimit} scans). Update in Goals & Usage.`
+                : `${todayScans}/${scanLimit} scans used today — almost at your limit.`}
+            </Text>
+          </View>
+        )}
+
         {/* Tips */}
         {scanState === "idle" && (
           <View style={styles.tipsContainer}>
@@ -577,6 +603,11 @@ const TIPS = [
 ];
 
 const styles = StyleSheet.create({
+  limitBanner: {
+    flexDirection: "row", alignItems: "flex-start", gap: 10,
+    borderRadius: 14, borderWidth: 1, padding: 14,
+  },
+  limitBannerText: { flex: 1, fontSize: 13, lineHeight: 19 },
   screen: { flex: 1 },
   header: {
     flexDirection: "row",
