@@ -226,6 +226,7 @@ export default function GalleryScreen() {
                 key={log.id}
                 style={[styles.gridItem, { borderRadius: 16, overflow: "hidden" }]}
                 activeOpacity={0.85}
+                onPress={() => router.push({ pathname: "/meal-detail", params: { id: log.id } })}
               >
                 <Image
                   source={{ uri: log.imageUri! }}

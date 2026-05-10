@@ -1,0 +1,374 @@
+import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNutrition } from "@/context/NutritionContext";
+import { useColors } from "@/hooks/useColors";
+
+const MEAL_COLORS: Record<string, string> = {
+  Breakfast: "#FF9500",
+  Lunch: "#2196F3",
+  Dinner: "#9C27B0",
+  Snack: "#4CAF50",
+};
+
+export default function MealDetailScreen() {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { logs, removeLog } = useNutrition();
+  const [deleting, setDeleting] = useState(false);
+
+  const log = logs.find((l) => l.id === id);
+  const topPadding = Platform.OS === "web" ? 67 : insets.top;
+
+  if (!log) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { paddingTop: topPadding + 12, backgroundColor: colors.darkGreen }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
+            <Feather name="x" size={22} color="#fff" />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]}>Meal Detail</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.notFound}>
+          <Feather name="alert-circle" size={40} color={colors.mutedForeground} />
+          <Text style={[styles.notFoundText, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+            Meal not found
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const handleDelete = () => {
+    if (Platform.OS === "web") {
+      if (window.confirm("Remove this meal from your log?")) {
+        doDelete();
+      }
+    } else {
+      Alert.alert(
+        "Remove meal",
+        "This will delete the log entry and photo. Continue?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: doDelete },
+        ]
+      );
+    }
+  };
+
+  const doDelete = async () => {
+    setDeleting(true);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+    await removeLog(log.id);
+    router.back();
+  };
+
+  const mealColor = MEAL_COLORS[log.mealType] ?? colors.vibrantGreen;
+
+  const macros = [
+    { label: "Calories", value: log.totals.calories, unit: "kcal", color: "#FF6B35" },
+    { label: "Protein",  value: log.totals.protein,  unit: "g",    color: "#2196F3" },
+    { label: "Carbs",    value: log.totals.carbs,     unit: "g",    color: "#FFC107" },
+    { label: "Fat",      value: log.totals.fat,       unit: "g",    color: "#F44336" },
+  ];
+
+  return (
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: topPadding + 12, backgroundColor: colors.darkGreen }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
+          <Feather name="arrow-left" size={22} color="#fff" />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
+          {log.dishName}
+        </Text>
+        <TouchableOpacity
+          onPress={handleDelete}
+          style={styles.headerBtn}
+          disabled={deleting}
+        >
+          <Feather name="trash-2" size={20} color={deleting ? "rgba(255,255,255,0.4)" : "#FF6B6B"} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Platform.OS === "web" ? 60 : insets.bottom + 40 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero image */}
+        {log.imageUri ? (
+          <View style={styles.imageWrap}>
+            <Image
+              source={{ uri: log.imageUri }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+            {/* Overlay badges */}
+            <View style={styles.imageBadges}>
+              <View style={[styles.autoBadge, { backgroundColor: "rgba(27,67,50,0.88)" }]}>
+                <Feather name="check-circle" size={11} color="#fff" />
+                <Text style={[styles.autoBadgeText, { fontFamily: "Inter_600SemiBold" }]}>
+                  Auto-Tracked
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.imagePlaceholder, { backgroundColor: colors.muted }]}>
+            <Feather name="image" size={40} color={colors.mutedForeground} />
+          </View>
+        )}
+
+        {/* Title row */}
+        <View style={styles.titleRow}>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={[styles.dishName, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+              {log.dishName}
+            </Text>
+            <View style={styles.metaRow}>
+              <View style={[styles.mealBadge, { backgroundColor: mealColor + "20" }]}>
+                <Text style={[styles.mealBadgeText, { color: mealColor, fontFamily: "Inter_600SemiBold" }]}>
+                  {log.mealType}
+                </Text>
+              </View>
+              <View style={[styles.dateBadge, { backgroundColor: colors.muted }]}>
+                <Feather name="calendar" size={11} color={colors.mutedForeground} />
+                <Text style={[styles.dateBadgeText, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+                  {formatDate(log.date)}
+                </Text>
+              </View>
+              <View style={[styles.dateBadge, { backgroundColor: colors.muted }]}>
+                <Feather name="clock" size={11} color={colors.mutedForeground} />
+                <Text style={[styles.dateBadgeText, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+                  {formatTime(log.loggedAt)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Macro cards */}
+        <View style={styles.macroGrid}>
+          {macros.map((m) => (
+            <View
+              key={m.label}
+              style={[
+                styles.macroCard,
+                { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: m.color },
+              ]}
+            >
+              <Text style={[styles.macroValue, { color: m.color, fontFamily: "Inter_700Bold" }]}>
+                {Math.round(m.value)}
+              </Text>
+              <Text style={[styles.macroUnit, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+                {m.unit}
+              </Text>
+              <Text style={[styles.macroLabel, { color: colors.foreground, fontFamily: "Inter_500Medium" }]}>
+                {m.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Ingredient breakdown */}
+        <View style={[styles.ingredientCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.cardHeader}>
+            <Text style={[styles.cardTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+              Ingredient breakdown
+            </Text>
+            <Text style={[styles.cardCount, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+              {log.ingredients.length} item{log.ingredients.length === 1 ? "" : "s"}
+            </Text>
+          </View>
+
+          {/* Column headers */}
+          <View style={[styles.colHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.colText, { color: colors.mutedForeground, fontFamily: "Inter_500Medium", flex: 1 }]}>
+              Ingredient
+            </Text>
+            <Text style={[styles.colText, { color: colors.mutedForeground, fontFamily: "Inter_500Medium", width: 56, textAlign: "right" }]}>
+              P
+            </Text>
+            <Text style={[styles.colText, { color: colors.mutedForeground, fontFamily: "Inter_500Medium", width: 56, textAlign: "right" }]}>
+              C
+            </Text>
+            <Text style={[styles.colText, { color: colors.mutedForeground, fontFamily: "Inter_500Medium", width: 56, textAlign: "right" }]}>
+              F
+            </Text>
+            <Text style={[styles.colText, { color: colors.mutedForeground, fontFamily: "Inter_500Medium", width: 64, textAlign: "right" }]}>
+              kcal
+            </Text>
+          </View>
+
+          {log.ingredients.map((ing, i) => (
+            <View key={i}>
+              {i > 0 && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
+              <View style={styles.ingRow}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={[styles.ingName, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                    {ing.name}
+                  </Text>
+                  <Text style={[styles.ingServing, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+                    {ing.serving}
+                  </Text>
+                </View>
+                <Text style={[styles.ingMacro, { color: "#2196F3", fontFamily: "Inter_500Medium", width: 56 }]}>
+                  {Math.round(ing.protein ?? 0)}g
+                </Text>
+                <Text style={[styles.ingMacro, { color: "#FFC107", fontFamily: "Inter_500Medium", width: 56 }]}>
+                  {Math.round(ing.carbs ?? 0)}g
+                </Text>
+                <Text style={[styles.ingMacro, { color: "#F44336", fontFamily: "Inter_500Medium", width: 56 }]}>
+                  {Math.round(ing.fat ?? 0)}g
+                </Text>
+                <Text style={[styles.ingCal, { color: colors.calorieOrange, fontFamily: "Inter_600SemiBold", width: 64 }]}>
+                  {Math.round(ing.calories)}
+                </Text>
+              </View>
+            </View>
+          ))}
+
+          {/* Totals row */}
+          <View style={[styles.totalRow, { borderTopColor: colors.darkGreen }]}>
+            <Text style={[styles.totalLabel, { color: colors.darkGreen, fontFamily: "Inter_700Bold", flex: 1 }]}>
+              Total
+            </Text>
+            <Text style={[styles.totalMacro, { color: "#2196F3", fontFamily: "Inter_700Bold", width: 56 }]}>
+              {Math.round(log.totals.protein)}g
+            </Text>
+            <Text style={[styles.totalMacro, { color: "#FFC107", fontFamily: "Inter_700Bold", width: 56 }]}>
+              {Math.round(log.totals.carbs)}g
+            </Text>
+            <Text style={[styles.totalMacro, { color: "#F44336", fontFamily: "Inter_700Bold", width: 56 }]}>
+              {Math.round(log.totals.fat)}g
+            </Text>
+            <Text style={[styles.totalCal, { color: colors.darkGreen, fontFamily: "Inter_700Bold", width: 64 }]}>
+              {Math.round(log.totals.calories)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Delete button */}
+        <TouchableOpacity
+          style={[styles.deleteBtn, { borderColor: "#FF6B6B" }]}
+          onPress={handleDelete}
+          disabled={deleting}
+          activeOpacity={0.75}
+        >
+          <Feather name="trash-2" size={16} color="#FF6B6B" />
+          <Text style={[styles.deleteBtnText, { fontFamily: "Inter_600SemiBold" }]}>
+            {deleting ? "Removing…" : "Remove from log"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
+}
+
+function formatDate(dateStr: string) {
+  const today = new Date().toISOString().split("T")[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yStr = yesterday.toISOString().split("T")[0];
+  if (dateStr === today) return "Today";
+  if (dateStr === yStr) return "Yesterday";
+  return new Date(dateStr + "T00:00:00").toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+}
+
+function formatTime(isoStr: string) {
+  return new Date(isoStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+  },
+  headerBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  headerTitle: { flex: 1, fontSize: 17, color: "#fff", textAlign: "center" },
+  notFound: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  notFoundText: { fontSize: 15 },
+  scroll: { flex: 1 },
+  content: { gap: 16, padding: 16 },
+  imageWrap: { borderRadius: 20, overflow: "hidden", position: "relative" },
+  image: { width: "100%", height: 240 },
+  imageBadges: { position: "absolute", top: 12, right: 12, gap: 6 },
+  autoBadge: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
+  },
+  autoBadgeText: { color: "#fff", fontSize: 11 },
+  imagePlaceholder: {
+    width: "100%", height: 180, borderRadius: 20,
+    alignItems: "center", justifyContent: "center",
+  },
+  titleRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  dishName: { fontSize: 22, lineHeight: 28 },
+  metaRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  mealBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  mealBadgeText: { fontSize: 12 },
+  dateBadge: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  dateBadgeText: { fontSize: 12 },
+  macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  macroCard: {
+    flex: 1, minWidth: "45%", borderRadius: 16,
+    borderWidth: 1, borderLeftWidth: 4, padding: 14, gap: 2,
+  },
+  macroValue: { fontSize: 26, lineHeight: 30 },
+  macroUnit: { fontSize: 12 },
+  macroLabel: { fontSize: 13, marginTop: 2 },
+  ingredientCard: { borderRadius: 20, borderWidth: 1, overflow: "hidden" },
+  cardHeader: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10,
+  },
+  cardTitle: { fontSize: 16 },
+  cardCount: { fontSize: 12 },
+  colHeader: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1,
+  },
+  colText: { fontSize: 11 },
+  divider: { height: 1, marginHorizontal: 16 },
+  ingRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12 },
+  ingName: { fontSize: 14 },
+  ingServing: { fontSize: 11 },
+  ingMacro: { fontSize: 13, textAlign: "right" },
+  ingCal: { fontSize: 13, textAlign: "right" },
+  totalRow: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: 2,
+  },
+  totalLabel: { fontSize: 14 },
+  totalMacro: { fontSize: 13, textAlign: "right" },
+  totalCal: { fontSize: 14, textAlign: "right" },
+  deleteBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5,
+  },
+  deleteBtnText: { color: "#FF6B6B", fontSize: 14 },
+});
