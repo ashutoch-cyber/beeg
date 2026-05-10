@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { MealLogCard } from "@/components/MealLogCard";
+import { WeeklyChart } from "@/components/WeeklyChart";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -185,6 +186,9 @@ export default function DashboardScreen() {
           />
         </View>
       </View>
+
+      {/* Weekly Chart */}
+      <WeeklyChart />
 
       {/* Snap Food FAB */}
       <TouchableOpacity
