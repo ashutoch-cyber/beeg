@@ -53,6 +53,9 @@ interface NutritionContextType {
   scanLimit: number;
   todayScans: number;
   monthScans: number;
+  streak: number;
+  bestStreak: number;
+  weekLoggedDays: boolean[];
   addLog: (log: Omit<FoodLog, "id" | "loggedAt">) => Promise<void>;
   removeLog: (id: string) => Promise<void>;
   updateGoals: (goals: DailyGoals) => Promise<void>;
@@ -133,6 +136,47 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     return scanHistory.find((r) => r.date === today)?.count ?? 0;
   })();
 
+  const { streak, bestStreak, weekLoggedDays } = (() => {
+    const loggedDates = new Set(logs.map((l) => l.date));
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    // Current streak — if today not logged yet, check from yesterday
+    let checkDate = new Date(today);
+    if (!loggedDates.has(todayStr)) checkDate.setDate(checkDate.getDate() - 1);
+    let streak = 0;
+    while (true) {
+      const ds = checkDate.toISOString().split("T")[0];
+      if (loggedDates.has(ds)) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+      else break;
+    }
+
+    // Best streak over all history
+    const sorted = Array.from(loggedDates).sort();
+    let best = 0, temp = 0, prev: string | null = null;
+    for (const date of sorted) {
+      if (prev === null) { temp = 1; }
+      else {
+        const diff = Math.round((new Date(date).getTime() - new Date(prev).getTime()) / 86400000);
+        temp = diff === 1 ? temp + 1 : 1;
+      }
+      if (temp > best) best = temp;
+      prev = date;
+    }
+
+    // This week Mon–Sun logged days
+    const dow = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((dow + 6) % 7));
+    const weekLoggedDays = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return loggedDates.has(d.toISOString().split("T")[0]);
+    });
+
+    return { streak, bestStreak: Math.max(best, streak), weekLoggedDays };
+  })();
+
   const monthScans = (() => {
     const month = getCurrentMonth();
     return scanHistory
@@ -193,6 +237,9 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         scanLimit,
         todayScans,
         monthScans,
+        streak,
+        bestStreak,
+        weekLoggedDays,
         addLog,
         removeLog,
         updateGoals,
