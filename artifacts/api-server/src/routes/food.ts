@@ -119,4 +119,50 @@ foodRouter.post("/food/scan", async (req, res) => {
   }
 });
 
+const INSIGHT_PROMPT = (
+  totals: { calories: number; protein: number; carbs: number; fat: number; fibre: number },
+  goals: { calories: number; protein: number; carbs: number; fat: number; fibre: number }
+) => `You are a friendly nutrition coach. The user has eaten the following today:
+- Calories: ${Math.round(totals.calories)} / ${goals.calories} kcal goal
+- Protein: ${Math.round(totals.protein)}g / ${goals.protein}g goal
+- Carbs: ${Math.round(totals.carbs)}g / ${goals.carbs}g goal
+- Fat: ${Math.round(totals.fat)}g / ${goals.fat}g goal
+- Fibre: ${Math.round(totals.fibre)}g / ${goals.fibre}g goal
+
+Give ONE short, specific, actionable nutrition tip (max 2 sentences) based on what they are missing or excelling at today. Be encouraging, practical, and name actual foods. Do NOT use markdown. Return only a JSON object: {"tip": "...", "category": "protein"|"carbs"|"fat"|"calories"|"fibre"|"general"}`;
+
+foodRouter.post("/food/insight", async (req, res) => {
+  try {
+    const { totals, goals } = req.body as {
+      totals: { calories: number; protein: number; carbs: number; fat: number; fibre: number };
+      goals: { calories: number; protein: number; carbs: number; fat: number; fibre: number };
+    };
+
+    if (!totals || !goals) {
+      res.status(400).json({ error: "totals and goals are required" });
+      return;
+    }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: INSIGHT_PROMPT(totals, goals) }] }],
+      config: { responseMimeType: "application/json", maxOutputTokens: 256 },
+    });
+
+    const raw = response.text ?? "{}";
+    let parsed: { tip: string; category: string };
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      res.status(500).json({ error: "Failed to generate insight" });
+      return;
+    }
+
+    res.json(parsed);
+  } catch (err) {
+    req.log.error({ err }, "Error generating nutrition insight");
+    res.status(500).json({ error: "Failed to generate insight" });
+  }
+});
+
 export default foodRouter;

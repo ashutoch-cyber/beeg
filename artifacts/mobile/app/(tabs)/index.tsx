@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { MealLogCard } from "@/components/MealLogCard";
-import { StreakCard } from "@/components/StreakCard";
+import { NutritionInsightCard } from "@/components/NutritionInsightCard";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
@@ -21,7 +21,7 @@ import { useColors } from "@/hooks/useColors";
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { todayTotals, goals, logs, removeLog, streak, bestStreak, weekLoggedDays } = useNutrition();
+  const { todayTotals, goals, logs, removeLog } = useNutrition();
 
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter((l) => l.date === today);
@@ -73,13 +73,6 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Streak Card */}
-      <StreakCard
-        streak={streak}
-        bestStreak={bestStreak}
-        weekLoggedDays={weekLoggedDays}
-      />
 
       {/* Calorie Ring Card */}
       <View
@@ -199,6 +192,13 @@ export default function DashboardScreen() {
           />
         </View>
       </View>
+
+      {/* AI Nutrition Insight */}
+      <NutritionInsightCard
+        totals={todayTotals}
+        goals={goals}
+        hasLogs={todayLogs.length > 0}
+      />
 
       {/* Weekly Chart */}
       <WeeklyChart />
