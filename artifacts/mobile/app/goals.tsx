@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/context/AuthContext";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -22,7 +23,15 @@ export default function GoalsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { goals, updateGoals, todayScans, monthScans, scanLimit, updateScanLimit, scanHistory } = useNutrition();
+  const { user, signOut } = useAuth();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+
+  const handleSignOut = () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Sign Out", style: "destructive", onPress: () => signOut() },
+    ]);
+  };
 
   const [calories, setCalories] = useState(goals.calories.toString());
   const [protein, setProtein] = useState(goals.protein.toString());
@@ -201,6 +210,34 @@ export default function GoalsScreen() {
           </Text>
         </View>
 
+        {/* Account */}
+        <Text style={[styles.sectionTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold", marginTop: 8 }]}>
+          Account
+        </Text>
+        <View style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.accountRow}>
+            <View style={[styles.avatarCircle, { backgroundColor: colors.darkGreen }]}>
+              <Text style={styles.avatarText}>{user?.email?.[0]?.toUpperCase() ?? "?"}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.accountEmail, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}>
+                {user?.email ?? "Unknown"}
+              </Text>
+              <Text style={[styles.accountSub, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+                Free account
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.signOutBtn, { borderColor: "#F44336" }]}
+            onPress={handleSignOut}
+            activeOpacity={0.8}
+          >
+            <Feather name="log-out" size={16} color="#F44336" />
+            <Text style={[styles.signOutText, { fontFamily: "Inter_600SemiBold" }]}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* 7-day mini bar chart */}
         <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.chartTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
@@ -294,4 +331,15 @@ const styles = StyleSheet.create({
     padding: 12, borderRadius: 10,
   },
   costNoteText: { flex: 1, fontSize: 12, lineHeight: 17 },
+  accountCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 14 },
+  accountRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatarCircle: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  avatarText: { color: "#FFFFFF", fontSize: 18, fontFamily: "Inter_700Bold" },
+  accountEmail: { fontSize: 15 },
+  accountSub: { fontSize: 12, marginTop: 2 },
+  signOutBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
+  },
+  signOutText: { color: "#F44336", fontSize: 15 },
 });
