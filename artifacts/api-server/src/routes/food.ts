@@ -1,7 +1,13 @@
-import { ai } from "@workspace/integrations-gemini-ai";
+import { GoogleGenAI } from "@google/genai";
 import { Router } from "express";
 
 const foodRouter = Router();
+
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY must be set.");
+}
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const FOOD_SCAN_PROMPT = `You are a professional nutritionist and food analyst. Analyze this food image carefully.
 

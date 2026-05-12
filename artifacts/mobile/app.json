@@ -24,6 +24,7 @@
     "web": {
       "favicon": "./assets/images/icon.png",
       "bundler": "metro",
+      "output": "static",
       "name": "Bee",
       "shortName": "Bee",
       "description": "AI-powered food tracking. Snap a photo, get instant nutrition breakdown.",
