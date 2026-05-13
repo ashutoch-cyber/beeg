@@ -1,7 +1,7 @@
 import { BlurView } from "expo-blur";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
-import { Tabs } from "expo-router";
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { router, Tabs } from "expo-router";
+import { Icon, Label, NativeTabs, VectorIcon } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
@@ -19,6 +19,14 @@ function NativeTabLayout() {
       <NativeTabs.Trigger name="gallery">
         <Icon sf={{ default: "photo.on.rectangle", selected: "photo.fill.on.rectangle.fill" }} />
         <Label>Gallery</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="summary">
+        <Icon src={<VectorIcon family={Feather} name="bar-chart-2" />} />
+        <Label>Summary</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="profile">
+        <Icon src={<VectorIcon family={Feather} name="user" />} />
+        <Label>Profile</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -81,6 +89,30 @@ function ClassicTabLayout() {
             ) : (
               <Feather name="image" size={22} color={color} />
             ),
+        }}
+      />
+      <Tabs.Screen
+        name="summary"
+        listeners={{
+          tabPress: (event) => {
+            event.preventDefault();
+            router.push("/weekly-summary");
+          },
+        }}
+        options={{
+          title: "Summary",
+          tabBarIcon: ({ color }) => (
+            <Feather name="bar-chart-2" size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <Feather name="user" size={22} color={color} />
+          ),
         }}
       />
     </Tabs>

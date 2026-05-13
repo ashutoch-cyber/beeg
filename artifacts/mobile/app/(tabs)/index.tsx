@@ -68,12 +68,6 @@ export default function DashboardScreen() {
         <View style={styles.headerBtns}>
           <TouchableOpacity
             style={[styles.goalBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => router.push("/weekly-summary")}
-          >
-            <Feather name="bar-chart-2" size={20} color={colors.vibrantGreen} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.goalBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             onPress={() => router.push("/goals")}
           >
             <Feather name="target" size={20} color={colors.vibrantGreen} />
@@ -272,10 +266,18 @@ export default function DashboardScreen() {
 }
 
 function getGreeting() {
+  const storage = (globalThis as typeof globalThis & {
+    localStorage?: { getItem: (key: string) => string | null };
+  }).localStorage;
+  let username = "";
+  try {
+    username = storage?.getItem("bee_username")?.trim() ?? "";
+  } catch {
+    username = "";
+  }
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  return `${greeting}${username ? `, ${username}` : ""}`;
 }
 
 const styles = StyleSheet.create({
