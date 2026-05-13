@@ -10,21 +10,28 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 const COST_PER_SCAN = 0.0004;
 
 export default function GoalsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { goals, updateGoals, todayScans, monthScans, scanLimit, updateScanLimit, scanHistory } = useNutrition();
   const { user, signOut } = useAuth();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const isMobile = width < 640;
+  const isDesktop = isDesktopWidth(width);
+  const inputFontSize = clampSize(width * 0.065, 22, 28);
+  const statValueSize = clampSize(width * 0.045, 16, 20);
 
   const handleSignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -106,6 +113,7 @@ export default function GoalsScreen() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.content,
+          isDesktop && styles.desktopContent,
           { paddingBottom: Platform.OS === "web" ? 34 + 80 : insets.bottom + 80 },
         ]}
         showsVerticalScrollIndicator={false}
@@ -133,7 +141,13 @@ export default function GoalsScreen() {
               <TextInput
                 style={[
                   styles.input,
-                  { color: field.color, fontFamily: "Inter_700Bold", borderColor: colors.border, backgroundColor: colors.background },
+                  {
+                    color: field.color,
+                    fontFamily: "Inter_700Bold",
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                    fontSize: inputFontSize,
+                  },
                 ]}
                 value={field.value}
                 onChangeText={field.onChangeText}
@@ -165,7 +179,7 @@ export default function GoalsScreen() {
           ].map((s) => (
             <View key={s.label} style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Feather name={s.icon} size={18} color={s.color} />
-              <Text style={[styles.statValue, { color: s.color, fontFamily: "Inter_700Bold" }]}>{s.value}</Text>
+              <Text style={[styles.statValue, { color: s.color, fontFamily: "Inter_700Bold", fontSize: statValueSize }]}>{s.value}</Text>
               <Text style={[styles.statLabel, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>{s.label}</Text>
             </View>
           ))}
@@ -173,7 +187,7 @@ export default function GoalsScreen() {
 
         {/* Daily limit card */}
         <View style={[styles.limitCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.limitHeader}>
+          <View style={[styles.limitHeader, isMobile && styles.mobileLimitHeader]}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.limitTitle, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}>
                 Daily scan limit
@@ -182,10 +196,11 @@ export default function GoalsScreen() {
                 {todayScans} of {scanLimit} used today
               </Text>
             </View>
-            <View style={styles.limitInputWrap}>
+            <View style={[styles.limitInputWrap, isMobile && styles.mobileLimitInputWrap]}>
               <TextInput
                 style={[
                   styles.limitInput,
+                  isMobile && styles.mobileLimitInput,
                   { color: limitBarColor, fontFamily: "Inter_700Bold", borderColor: colors.border, backgroundColor: colors.background },
                 ]}
                 value={limitInput}
@@ -281,40 +296,44 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingBottom: 16,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, color: "#FFFFFF" },
-  saveBtn: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 12 },
+  saveBtn: { minHeight: 44, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 12, justifyContent: "center" },
   saveText: { color: "#FFFFFF", fontSize: 15 },
   scroll: { flex: 1 },
-  content: { padding: 20, gap: 14 },
+  content: { padding: 16, gap: 14 },
+  desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },
   sectionTitle: { fontSize: 18 },
   subtitle: { fontSize: 13, lineHeight: 19, marginTop: -6 },
   fieldCard: {
-    borderRadius: 16, borderWidth: 1, borderLeftWidth: 4, padding: 16, gap: 12,
+    width: "100%", borderRadius: 16, borderWidth: 1, borderLeftWidth: 4, padding: 16, gap: 12,
   },
   fieldLabel: { fontSize: 15 },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   input: {
-    flex: 1, fontSize: 28, height: 56, borderRadius: 12, borderWidth: 1,
+    flex: 1, minWidth: 0, fontSize: 28, minHeight: 56, borderRadius: 12, borderWidth: 1,
     paddingHorizontal: 16, textAlign: "right",
   },
-  unit: { fontSize: 16, width: 40 },
+  unit: { fontSize: 16, width: 40, flexShrink: 0 },
   statsRow: { flexDirection: "row", gap: 10 },
   statCard: {
-    flex: 1, borderRadius: 14, borderWidth: 1, padding: 14,
+    flex: 1, minWidth: 0, borderRadius: 14, borderWidth: 1, padding: 12,
     alignItems: "center", gap: 4,
   },
   statValue: { fontSize: 20 },
   statLabel: { fontSize: 11 },
   limitCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
   limitHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
+  mobileLimitHeader: { flexDirection: "column", alignItems: "stretch" },
   limitTitle: { fontSize: 15 },
   limitSub: { fontSize: 12, marginTop: 2 },
   limitInputWrap: {},
+  mobileLimitInputWrap: { width: "100%" },
   limitInput: {
-    width: 72, height: 48, fontSize: 22, borderRadius: 10, borderWidth: 1,
+    width: 72, minHeight: 48, fontSize: 22, borderRadius: 10, borderWidth: 1,
     paddingHorizontal: 8, textAlign: "center",
   },
+  mobileLimitInput: { width: "100%" },
   progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
   progressFill: { height: 8, borderRadius: 4, minWidth: 4 },
   limitPct: { fontSize: 12, marginTop: -4 },
@@ -339,7 +358,7 @@ const styles = StyleSheet.create({
   accountSub: { fontSize: 12, marginTop: 2 },
   signOutBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 8, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
+    gap: 8, minHeight: 48, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
   },
   signOutText: { color: "#F44336", fontSize: 15 },
 });

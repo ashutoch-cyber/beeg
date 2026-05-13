@@ -8,8 +8,10 @@ import {
 import { setBaseUrl } from "@workspace/api-client-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { router, Stack, useSegments } from "expo-router";
+import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { Platform, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -25,6 +27,43 @@ if (process.env.EXPO_PUBLIC_DOMAIN) {
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+function AppHead() {
+  return (
+    <Head>
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <link rel="manifest" href="/manifest.json" />
+      <meta name="theme-color" content="#1a5c3a" />
+      <link rel="apple-touch-icon" href="/icon-192.png" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <style>{`
+        html {
+          font-size: 16px;
+          box-sizing: border-box;
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+
+        *, *::before, *::after {
+          box-sizing: inherit;
+        }
+
+        body, #root {
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+
+        button, [role="button"], input, textarea, select {
+          touch-action: manipulation;
+        }
+      `}</style>
+    </Head>
+  );
+}
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -74,15 +113,31 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  useEffect(() => {
+    const isWeb = Platform.OS.toString() === "web";
+    if (
+      !isWeb ||
+      process.env.NODE_ENV === "development" ||
+      !("serviceWorker" in navigator)
+    ) {
+      return;
+    }
+
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // PWA install should not block the app if service worker registration fails.
+    });
+  }, []);
+
   if (!fontsLoaded && !fontError) return null;
 
   return (
     <SafeAreaProvider>
+      <AppHead />
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <NutritionProvider>
-              <GestureHandlerRootView>
+              <GestureHandlerRootView style={styles.appRoot}>
                 <KeyboardProvider>
                   <AuthGate>
                     <RootLayoutNav />
@@ -96,3 +151,7 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  appRoot: { flex: 1 },
+});

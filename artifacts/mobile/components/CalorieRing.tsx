@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
+import { clampSize } from "@/lib/responsive";
 
 interface CalorieRingProps {
   consumed: number;
@@ -17,6 +18,7 @@ export function CalorieRing({ consumed, goal, size = 200 }: CalorieRingProps) {
   const progress = Math.min(consumed / goal, 1);
   const strokeDashoffset = circumference * (1 - progress);
   const center = size / 2;
+  const consumedSize = clampSize(size * 0.2, 32, 42);
 
   const remaining = Math.max(goal - consumed, 0);
   const isOver = consumed > goal;
@@ -47,7 +49,17 @@ export function CalorieRing({ consumed, goal, size = 200 }: CalorieRingProps) {
         />
       </Svg>
       <View style={styles.content}>
-        <Text style={[styles.consumed, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+        <Text
+          style={[
+            styles.consumed,
+            {
+              color: colors.darkGreen,
+              fontFamily: "Inter_700Bold",
+              fontSize: consumedSize,
+              lineHeight: consumedSize + 6,
+            },
+          ]}
+        >
           {Math.round(consumed)}
         </Text>
         <Text style={[styles.label, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>

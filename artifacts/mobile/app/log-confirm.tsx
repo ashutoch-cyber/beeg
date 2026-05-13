@@ -9,15 +9,18 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 export default function LogConfirmScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { addLog } = useNutrition();
   const params = useLocalSearchParams<{
     result: string;
@@ -32,6 +35,11 @@ export default function LogConfirmScreen() {
   const date = params.date ?? new Date().toISOString().split("T")[0];
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const isMobile = width < 640;
+  const isDesktop = isDesktopWidth(width);
+  const macroValueSize = clampSize(width * 0.05, 29, 38);
+  const imageHeight = clampSize(width * 0.52, 190, isDesktop ? 320 : 260);
+  const bottomActionOffset = isMobile ? 170 : 100;
 
   const handleConfirm = async () => {
     if (!result) return;
@@ -83,15 +91,18 @@ export default function LogConfirmScreen() {
           styles.content,
           {
             paddingBottom:
-              Platform.OS === "web" ? 34 + 100 : insets.bottom + 100,
+              Platform.OS === "web"
+                ? 34 + bottomActionOffset
+                : insets.bottom + bottomActionOffset,
           },
+          isDesktop && styles.desktopContent,
         ]}
         showsVerticalScrollIndicator={false}
       >
         {imageUri ? (
           <Image
             source={{ uri: imageUri }}
-            style={[styles.image, { borderRadius: 20 }]}
+            style={[styles.image, { height: imageHeight, borderRadius: 20 }]}
             resizeMode="cover"
           />
         ) : null}
@@ -138,13 +149,20 @@ export default function LogConfirmScreen() {
                   backgroundColor: colors.card,
                   borderColor: colors.border,
                   borderLeftColor: m.color,
+                  flexBasis: isDesktop ? "23%" : "48%",
+                  maxWidth: isDesktop ? "23%" : "48%",
                 },
               ]}
             >
               <Text
                 style={[
                   styles.macroValue,
-                  { color: m.color, fontFamily: "Inter_700Bold" },
+                  {
+                    color: m.color,
+                    fontFamily: "Inter_700Bold",
+                    fontSize: macroValueSize,
+                    lineHeight: macroValueSize + 4,
+                  },
                 ]}
               >
                 {Math.round(m.value)}
@@ -262,6 +280,7 @@ export default function LogConfirmScreen() {
       <View
         style={[
           styles.bottomBar,
+          isMobile && styles.mobileBottomBar,
           {
             backgroundColor: colors.background,
             borderTopColor: colors.border,
@@ -273,6 +292,7 @@ export default function LogConfirmScreen() {
         <TouchableOpacity
           style={[
             styles.cancelBtn,
+            isMobile && styles.mobileFullButton,
             { backgroundColor: colors.muted, borderColor: colors.border },
           ]}
           onPress={() => router.back()}
@@ -287,7 +307,11 @@ export default function LogConfirmScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.confirmBtn, { backgroundColor: colors.vibrantGreen }]}
+          style={[
+            styles.confirmBtn,
+            isMobile && styles.mobileFullButton,
+            { backgroundColor: colors.vibrantGreen },
+          ]}
           onPress={handleConfirm}
         >
           <Text style={[styles.confirmText, { fontFamily: "Inter_700Bold" }]}>
@@ -309,15 +333,16 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   backBtn: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
   headerTitle: { fontSize: 18, color: "#FFFFFF" },
   scroll: { flex: 1 },
-  content: { padding: 20, gap: 16 },
-  image: { width: "100%", height: 200 },
+  content: { padding: 16, gap: 16 },
+  desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },
+  image: { width: "100%" },
   summaryCard: { gap: 8 },
   mealBadge: {
     alignSelf: "flex-start",
@@ -329,17 +354,19 @@ const styles = StyleSheet.create({
   dishName: { fontSize: 24 },
   macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   macroCard: {
-    flex: 1,
-    minWidth: "45%",
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    minHeight: 112,
     borderRadius: 16,
     borderWidth: 1,
     borderLeftWidth: 4,
-    padding: 14,
-    gap: 2,
+    padding: 16,
+    justifyContent: "space-between",
   },
-  macroValue: { fontSize: 28, lineHeight: 32 },
-  macroUnit: { fontSize: 12 },
-  macroLabel: { fontSize: 13, marginTop: 2 },
+  macroValue: { fontWeight: "700" },
+  macroUnit: { fontSize: 12, lineHeight: 16 },
+  macroLabel: { fontSize: 14, marginTop: 8 },
   ingredientList: { borderRadius: 20, borderWidth: 1, overflow: "hidden" },
   listTitle: { fontSize: 16, padding: 16, paddingBottom: 12 },
   divider: { height: 1, marginHorizontal: 16 },
@@ -370,8 +397,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
   },
+  mobileBottomBar: { flexDirection: "column" },
+  mobileFullButton: { flex: 0 },
   cancelBtn: {
     flex: 1,
+    width: "100%",
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
@@ -381,6 +412,8 @@ const styles = StyleSheet.create({
   cancelText: { fontSize: 16 },
   confirmBtn: {
     flex: 2,
+    width: "100%",
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,10 +18,12 @@ import { NutritionInsightCard } from "@/components/NutritionInsightCard";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { todayTotals, goals, logs, removeLog } = useNutrition();
 
   const today = new Date().toISOString().split("T")[0];
@@ -28,6 +31,9 @@ export default function DashboardScreen() {
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : 0;
+  const isDesktop = isDesktopWidth(width);
+  const ringSize = clampSize(width * 0.46, 168, isDesktop ? 220 : 200);
+  const statValueSize = clampSize(width * 0.045, 17, 22);
 
   return (
     <ScrollView
@@ -35,6 +41,7 @@ export default function DashboardScreen() {
       contentContainerStyle={[
         styles.content,
         { paddingTop: topPadding + 16, paddingBottom: bottomPadding + 100 },
+        isDesktop && styles.desktopContent,
       ]}
       showsVerticalScrollIndicator={false}
     >
@@ -84,14 +91,14 @@ export default function DashboardScreen() {
         <CalorieRing
           consumed={todayTotals.calories}
           goal={goals.calories}
-          size={200}
+          size={ringSize}
         />
         <View style={styles.ringStats}>
           <View style={styles.statItem}>
             <Text
               style={[
                 styles.statValue,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+                { color: "#FFFFFF", fontFamily: "Inter_700Bold", fontSize: statValueSize },
               ]}
             >
               {Math.round(todayTotals.calories)}
@@ -112,7 +119,7 @@ export default function DashboardScreen() {
             <Text
               style={[
                 styles.statValue,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+                { color: "#FFFFFF", fontFamily: "Inter_700Bold", fontSize: statValueSize },
               ]}
             >
               {Math.max(goals.calories - Math.round(todayTotals.calories), 0)}
@@ -133,7 +140,7 @@ export default function DashboardScreen() {
             <Text
               style={[
                 styles.statValue,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+                { color: "#FFFFFF", fontFamily: "Inter_700Bold", fontSize: statValueSize },
               ]}
             >
               {goals.calories}
@@ -274,6 +281,7 @@ function getGreeting() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { gap: 0 },
+  desktopContent: { width: "100%", maxWidth: 960, alignSelf: "center" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -312,7 +320,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statItem: { alignItems: "center", gap: 2 },
-  statValue: { fontSize: 20 },
+  statValue: { fontSize: 20, lineHeight: 26 },
   statLabel: { fontSize: 12 },
   statDivider: { width: 1, height: 32 },
   macroCard: {
@@ -328,6 +336,7 @@ const styles = StyleSheet.create({
   snapBtn: {
     marginHorizontal: 16,
     borderRadius: 16,
+    minHeight: 48,
     paddingVertical: 16,
     flexDirection: "row",
     alignItems: "center",

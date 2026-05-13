@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Svg, { Line, Rect, Text as SvgText } from "react-native-svg";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 type Metric = "calories" | "protein" | "carbs" | "fat";
 
@@ -27,8 +28,10 @@ function getPast7Days(): string[] {
 
 export function WeeklyChart() {
   const colors = useColors();
+  const { width } = useWindowDimensions();
   const { logs, goals } = useNutrition();
   const [metric, setMetric] = useState<Metric>("calories");
+  const isDesktop = isDesktopWidth(width);
 
   const days = getPast7Days();
 
@@ -57,14 +60,20 @@ export function WeeklyChart() {
   };
   const barColor = metricColor[metric];
 
-  const CHART_WIDTH = 320;
-  const CHART_HEIGHT = 130;
+  const CHART_WIDTH = Math.round(
+    clampSize(width - (isDesktop ? 104 : 72), 260, isDesktop ? 640 : 520),
+  );
+  const CHART_HEIGHT = isDesktop ? 150 : 130;
   const BAR_GAP = 6;
   const BAR_WIDTH = (CHART_WIDTH - BAR_GAP * 8) / 7;
   const LABEL_HEIGHT = 20;
   const PLOT_HEIGHT = CHART_HEIGHT - LABEL_HEIGHT;
 
   const goalY = PLOT_HEIGHT - (goal / maxVal) * PLOT_HEIGHT;
+  const goalLineSegments = Array.from(
+    { length: Math.ceil(CHART_WIDTH / 8) + 1 },
+    (_, index) => index * 8,
+  );
 
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -106,14 +115,12 @@ export function WeeklyChart() {
       <View style={styles.chartContainer}>
         <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
           {/* Goal dashed line */}
-          {[0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120,
-            128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224,
-            232, 240, 248, 256, 264, 272, 280, 288, 296, 304, 312, 320].map((x) => (
+          {goalLineSegments.map((x) => (
             <Line
               key={x}
               x1={x}
               y1={goalY}
-              x2={x + 4}
+              x2={Math.min(x + 4, CHART_WIDTH)}
               y2={goalY}
               stroke={barColor}
               strokeWidth={1.5}
@@ -202,9 +209,12 @@ const styles = StyleSheet.create({
   },
   toggleBtn: {
     flex: 1,
-    paddingVertical: 6,
+    minHeight: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     borderRadius: 8,
     alignItems: "center",
+    justifyContent: "center",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
@@ -212,6 +222,7 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontSize: 12,
+    textAlign: "center",
   },
   chartContainer: {
     alignItems: "center",

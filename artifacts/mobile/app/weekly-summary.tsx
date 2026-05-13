@@ -12,12 +12,14 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ViewShot from "react-native-view-shot";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 const MACRO_COLORS = {
   protein: "#2196F3",
@@ -44,10 +46,15 @@ function getDayLabel(date: Date) {
 export default function WeeklySummaryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { logs, goals, scanHistory } = useNutrition();
   const cardRef = useRef<ViewShot>(null);
   const [saving, setSaving] = useState(false);
-  const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const isWeb = Platform.OS.toString() === "web";
+  const topPadding = isWeb ? 67 : insets.top;
+  const isDesktop = isDesktopWidth(width);
+  const totalCaloriesSize = clampSize(width * 0.095, 32, 42);
+  const macroValueSize = clampSize(width * 0.043, 15, 18);
 
   const { monday, sunday, label: weekLabel } = getWeekRange();
 
@@ -97,14 +104,14 @@ export default function WeeklySummaryScreen() {
   };
 
   const handleSave = async () => {
-    if (Platform.OS === "web") {
+    if (isWeb) {
       Alert.alert("Save as image", "To save on web, take a screenshot of this screen.");
       return;
     }
     if (!cardRef.current) return;
     setSaving(true);
     try {
-      if (Platform.OS !== "web") {
+      if (!isWeb) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
       const uri = await (cardRef.current as any).capture();
@@ -151,7 +158,8 @@ export default function WeeklySummaryScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: Platform.OS === "web" ? 60 : insets.bottom + 40 },
+          isDesktop && styles.desktopScroll,
+          { paddingBottom: isWeb ? 60 : insets.bottom + 40 },
         ]}
       >
         {/* ── Shareable Card ── */}
@@ -174,7 +182,17 @@ export default function WeeklySummaryScreen() {
               {/* Calorie summary */}
               <View style={styles.calRow}>
                 <View style={styles.calMain}>
-                  <Text style={[styles.calBig, { color: "#FF6B35", fontFamily: "Inter_700Bold" }]}>
+                  <Text
+                    style={[
+                      styles.calBig,
+                      {
+                        color: "#FF6B35",
+                        fontFamily: "Inter_700Bold",
+                        fontSize: totalCaloriesSize,
+                        lineHeight: totalCaloriesSize + 4,
+                      },
+                    ]}
+                  >
                     {Math.round(totalCal).toLocaleString()}
                   </Text>
                   <Text style={[styles.calSub, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
@@ -205,7 +223,19 @@ export default function WeeklySummaryScreen() {
                   { label: "Fat", value: totalFat, color: MACRO_COLORS.fat },
                 ] as const).map((m) => (
                   <View key={m.label} style={[styles.macroPill, { borderColor: m.color, backgroundColor: m.color + "15" }]}>
-                    <Text style={[styles.macroPillVal, { color: m.color, fontFamily: "Inter_700Bold" }]}>{m.value}g</Text>
+                    <Text
+                      style={[
+                        styles.macroPillVal,
+                        {
+                          color: m.color,
+                          fontFamily: "Inter_700Bold",
+                          fontSize: macroValueSize,
+                          lineHeight: macroValueSize + 4,
+                        },
+                      ]}
+                    >
+                      {m.value}g
+                    </Text>
                     <Text style={[styles.macroPillLabel, { color: m.color, fontFamily: "Inter_400Regular" }]}>{m.label}</Text>
                   </View>
                 ))}
@@ -325,15 +355,16 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingBottom: 16,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, color: "#FFFFFF" },
   shareBtn: {
     flexDirection: "row", alignItems: "center", gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8,
+    minHeight: 44, paddingHorizontal: 14, paddingVertical: 8,
     backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 12,
   },
   shareBtnText: { color: "#FFFFFF", fontSize: 14 },
   scroll: { padding: 16, gap: 16 },
+  desktopScroll: { width: "100%", maxWidth: 760, alignSelf: "center" },
   cardOuter: { borderRadius: 20, overflow: "hidden" },
   card: { borderRadius: 20, overflow: "hidden" },
   cardHeader: {
@@ -356,9 +387,9 @@ const styles = StyleSheet.create({
   goalBadgeText: { fontSize: 11 },
   macroPills: { flexDirection: "row", gap: 8 },
   macroPill: {
-    flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 14, borderWidth: 1.5,
+    flex: 1, minWidth: 0, alignItems: "center", paddingVertical: 10, paddingHorizontal: 6, borderRadius: 14, borderWidth: 1.5,
   },
-  macroPillVal: { fontSize: 18 },
+  macroPillVal: { fontSize: 18, textAlign: "center" },
   macroPillLabel: { fontSize: 11, marginTop: 2 },
   chartSection: { gap: 12 },
   chartTitle: { fontSize: 14 },

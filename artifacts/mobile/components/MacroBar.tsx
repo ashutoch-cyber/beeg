@@ -55,12 +55,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
   },
   label: {
     fontSize: 13,
+    flexShrink: 0,
   },
   values: {
     fontSize: 12,
+    flex: 1,
+    minWidth: 0,
+    textAlign: "right",
   },
   track: {
     height: 8,

@@ -5,6 +5,8 @@ dist
 tmp
 out-tsc
 *.tsbuildinfo
+artifacts/mobile/static-build/
+artifacts/mobile/public/workbox-*.js
 .expo
 .expo-shared
 

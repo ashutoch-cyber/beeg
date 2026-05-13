@@ -10,11 +10,13 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 const MEAL_COLORS: Record<string, string> = {
   Breakfast: "#FF9500",
@@ -26,12 +28,16 @@ const MEAL_COLORS: Record<string, string> = {
 export default function MealDetailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { logs, removeLog } = useNutrition();
   const [deleting, setDeleting] = useState(false);
 
   const log = logs.find((l) => l.id === id);
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const isDesktop = isDesktopWidth(width);
+  const macroValueSize = clampSize(width * 0.05, 29, 38);
+  const imageHeight = clampSize(width * 0.58, 210, isDesktop ? 360 : 280);
 
   if (!log) {
     return (
@@ -112,6 +118,7 @@ export default function MealDetailScreen() {
         contentContainerStyle={[
           styles.content,
           { paddingBottom: Platform.OS === "web" ? 60 : insets.bottom + 40 },
+          isDesktop && styles.desktopContent,
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -120,7 +127,7 @@ export default function MealDetailScreen() {
           <View style={styles.imageWrap}>
             <Image
               source={{ uri: log.imageUri }}
-              style={styles.image}
+              style={[styles.image, { height: imageHeight }]}
               resizeMode="cover"
             />
             {/* Overlay badges */}
@@ -174,10 +181,26 @@ export default function MealDetailScreen() {
               key={m.label}
               style={[
                 styles.macroCard,
-                { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: m.color },
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderLeftColor: m.color,
+                  flexBasis: isDesktop ? "23%" : "48%",
+                  maxWidth: isDesktop ? "23%" : "48%",
+                },
               ]}
             >
-              <Text style={[styles.macroValue, { color: m.color, fontFamily: "Inter_700Bold" }]}>
+              <Text
+                style={[
+                  styles.macroValue,
+                  {
+                    color: m.color,
+                    fontFamily: "Inter_700Bold",
+                    fontSize: macroValueSize,
+                    lineHeight: macroValueSize + 4,
+                  },
+                ]}
+              >
                 {Math.round(m.value)}
               </Text>
               <Text style={[styles.macroUnit, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
@@ -308,14 +331,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 14,
   },
-  headerBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  headerBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: { flex: 1, fontSize: 17, color: "#fff", textAlign: "center" },
   notFound: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
   notFoundText: { fontSize: 15 },
   scroll: { flex: 1 },
   content: { gap: 16, padding: 16 },
+  desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },
   imageWrap: { borderRadius: 20, overflow: "hidden", position: "relative" },
-  image: { width: "100%", height: 240 },
+  image: { width: "100%" },
   imageBadges: { position: "absolute", top: 12, right: 12, gap: 6 },
   autoBadge: {
     flexDirection: "row", alignItems: "center", gap: 5,
@@ -335,12 +359,12 @@ const styles = StyleSheet.create({
   dateBadgeText: { fontSize: 12 },
   macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   macroCard: {
-    flex: 1, minWidth: "45%", borderRadius: 16,
-    borderWidth: 1, borderLeftWidth: 4, padding: 14, gap: 2,
+    flexGrow: 1, flexShrink: 1, minWidth: 0, minHeight: 112, borderRadius: 16,
+    borderWidth: 1, borderLeftWidth: 4, padding: 16, justifyContent: "space-between",
   },
-  macroValue: { fontSize: 26, lineHeight: 30 },
-  macroUnit: { fontSize: 12 },
-  macroLabel: { fontSize: 13, marginTop: 2 },
+  macroValue: { fontWeight: "700" },
+  macroUnit: { fontSize: 12, lineHeight: 16 },
+  macroLabel: { fontSize: 14, marginTop: 8 },
   ingredientCard: { borderRadius: 20, borderWidth: 1, overflow: "hidden" },
   cardHeader: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",

@@ -12,11 +12,13 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 type ScanState = "idle" | "detecting" | "result" | "error";
 
@@ -51,6 +53,7 @@ function getMealTypeFromHour(): MealType {
 export default function SnapScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { todayScans, scanLimit, addScan } = useNutrition();
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -60,6 +63,10 @@ export default function SnapScreen() {
 
   const atLimit = scanLimit > 0 && todayScans >= scanLimit;
   const nearLimit = scanLimit > 0 && !atLimit && todayScans >= scanLimit * 0.8;
+  const isMobile = width < 640;
+  const isDesktop = isDesktopWidth(width);
+  const imageHeight = clampSize(width * 0.58, 210, isDesktop ? 340 : 280);
+  const bottomActionOffset = isMobile ? 170 : 100;
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
@@ -180,7 +187,13 @@ export default function SnapScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: Platform.OS === "web" ? 34 + 80 : insets.bottom + 80 },
+          isDesktop && styles.desktopContent,
+          {
+            paddingBottom:
+              Platform.OS === "web"
+                ? 34 + bottomActionOffset
+                : insets.bottom + bottomActionOffset,
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -253,7 +266,7 @@ export default function SnapScreen() {
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: imageUri }}
-              style={[styles.foodImage, { borderRadius: 20 }]}
+              style={[styles.foodImage, { height: imageHeight, borderRadius: 20 }]}
               resizeMode="cover"
             />
             {scanState === "detecting" && (
@@ -465,10 +478,11 @@ export default function SnapScreen() {
         ]}
       >
         {(scanState === "idle" || scanState === "error") && (
-          <View style={styles.captureButtons}>
+          <View style={[styles.captureButtons, isMobile && styles.mobileButtonStack]}>
             <TouchableOpacity
               style={[
                 styles.captureBtn,
+                isMobile && styles.mobileFullButton,
                 { backgroundColor: colors.darkGreen },
               ]}
               onPress={() => pickImage(true)}
@@ -481,6 +495,7 @@ export default function SnapScreen() {
             <TouchableOpacity
               style={[
                 styles.galleryBtn,
+                isMobile && styles.mobileFullButton,
                 { backgroundColor: colors.card, borderColor: colors.border },
               ]}
               onPress={() => pickImage(false)}
@@ -498,10 +513,11 @@ export default function SnapScreen() {
           </View>
         )}
         {scanState === "result" && (
-          <View style={styles.logButtons}>
+          <View style={[styles.logButtons, isMobile && styles.mobileButtonStack]}>
             <TouchableOpacity
               style={[
                 styles.editBtn,
+                isMobile && styles.mobileFullButton,
                 { backgroundColor: colors.card, borderColor: colors.border },
               ]}
               onPress={() => {
@@ -520,7 +536,11 @@ export default function SnapScreen() {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.logBtn, { backgroundColor: colors.vibrantGreen }]}
+              style={[
+                styles.logBtn,
+                isMobile && styles.mobileFullButton,
+                { backgroundColor: colors.vibrantGreen },
+              ]}
               onPress={handleLog}
             >
               <Text style={[styles.logBtnText, { fontFamily: "Inter_700Bold" }]}>
@@ -545,14 +565,41 @@ function MacroCard({
   unit: string;
   color: string;
 }) {
+  const colors = useColors();
+  const { width } = useWindowDimensions();
+  const isDesktop = isDesktopWidth(width);
+  const valueSize = clampSize(width * 0.05, 29, 38);
+
   return (
-    <View style={[macroCardStyles.card, { borderLeftColor: color }]}>
-      <Text style={[macroCardStyles.value, { color, fontFamily: "Inter_700Bold" }]}>
-        {Math.round(value)}
-      </Text>
-      <Text style={[macroCardStyles.unit, { fontFamily: "Inter_400Regular" }]}>
-        {unit}
-      </Text>
+    <View
+      style={[
+        macroCardStyles.card,
+        {
+          borderColor: colors.border,
+          borderLeftColor: color,
+          flexBasis: isDesktop ? "23%" : "48%",
+          maxWidth: isDesktop ? "23%" : "48%",
+        },
+      ]}
+    >
+      <View>
+        <Text
+          style={[
+            macroCardStyles.value,
+            {
+              color,
+              fontFamily: "Inter_700Bold",
+              fontSize: valueSize,
+              lineHeight: valueSize + 4,
+            },
+          ]}
+        >
+          {Math.round(value)}
+        </Text>
+        <Text style={[macroCardStyles.unit, { fontFamily: "Inter_400Regular" }]}>
+          {unit}
+        </Text>
+      </View>
       <Text style={[macroCardStyles.label, { fontFamily: "Inter_500Medium" }]}>
         {label}
       </Text>
@@ -562,11 +609,15 @@ function MacroCard({
 
 const macroCardStyles = StyleSheet.create({
   card: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    minHeight: 112,
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 14,
-    gap: 2,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    justifyContent: "space-between",
     borderLeftWidth: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -574,9 +625,9 @@ const macroCardStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  value: { fontSize: 28, lineHeight: 32 },
-  unit: { fontSize: 12, color: "#6B7E76" },
-  label: { fontSize: 13, color: "#1B4332", marginTop: 2 },
+  value: { fontWeight: "700" },
+  unit: { fontSize: 12, color: "#6B7E76", lineHeight: 16 },
+  label: { fontSize: 14, color: "#1B4332", marginTop: 8 },
 });
 
 const TIPS = [
@@ -616,10 +667,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, color: "#FFFFFF" },
   scrollView: { flex: 1 },
-  scrollContent: { padding: 20, gap: 20 },
+  scrollContent: { padding: 16, gap: 20 },
+  desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },
   tipsContainer: { gap: 16 },
   tipsTitle: { fontSize: 18 },
   tipsList: { gap: 12 },
@@ -629,7 +681,7 @@ const styles = StyleSheet.create({
   tipLabel: { fontSize: 14 },
   tipDesc: { fontSize: 12 },
   imageContainer: { borderRadius: 20, overflow: "hidden" },
-  foodImage: { width: "100%", height: 240 },
+  foodImage: { width: "100%" },
   scanOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(27,67,50,0.7)",
@@ -646,10 +698,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   errorText: { fontSize: 14, textAlign: "center", lineHeight: 20 },
-  retryBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
+  retryBtn: { minHeight: 48, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, justifyContent: "center" },
   retryText: { color: "#FFFFFF", fontSize: 15 },
   resultsContainer: { gap: 16 },
-  dishName: { fontSize: 22 },
+  dishName: { fontSize: 22, lineHeight: 28 },
   macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   ingredientCard: { borderRadius: 20, borderWidth: 1, overflow: "hidden" },
   ingredientTitle: { fontSize: 16, padding: 16, paddingBottom: 12 },
@@ -677,9 +729,11 @@ const styles = StyleSheet.create({
   mealSelectorLabel: { fontSize: 14 },
   mealSelector: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   mealPill: {
+    minHeight: 44,
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 24,
+    justifyContent: "center",
   },
   mealPillText: { fontSize: 14 },
   bottomBar: {
@@ -688,8 +742,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   captureButtons: { flexDirection: "row", gap: 10 },
+  mobileButtonStack: { flexDirection: "column" },
+  mobileFullButton: { flex: 0 },
   captureBtn: {
     flex: 1,
+    width: "100%",
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -700,6 +758,8 @@ const styles = StyleSheet.create({
   captureBtnText: { color: "#FFFFFF", fontSize: 16 },
   galleryBtn: {
     flex: 1,
+    width: "100%",
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -712,6 +772,8 @@ const styles = StyleSheet.create({
   logButtons: { flexDirection: "row", gap: 10 },
   editBtn: {
     flex: 1,
+    width: "100%",
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
@@ -721,6 +783,8 @@ const styles = StyleSheet.create({
   editBtnText: { fontSize: 16 },
   logBtn: {
     flex: 2,
+    width: "100%",
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,

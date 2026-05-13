@@ -589,6 +589,25 @@ async function buildWebExport(domain, expoPublicReplId) {
   } catch (err) {
     console.error("Web export failed (non-fatal):", err.message);
   }
+  copyPublicPwaAssets(webOutDir);
+}
+
+function copyPublicPwaAssets(webOutDir) {
+  const publicDir = path.join(projectRoot, "public");
+  if (!fs.existsSync(publicDir)) {
+    return;
+  }
+
+  const targets = [path.join(projectRoot, "static-build"), webOutDir];
+  for (const target of targets) {
+    fs.mkdirSync(target, { recursive: true });
+    for (const entry of fs.readdirSync(publicDir)) {
+      const source = path.join(publicDir, entry);
+      const destination = path.join(target, entry);
+      fs.cpSync(source, destination, { recursive: true });
+    }
+  }
+  console.log("PWA assets copied");
 }
 
 main().catch((error) => {

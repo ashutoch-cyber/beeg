@@ -9,11 +9,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
+import { clampSize, isDesktopWidth, isTabletWidth } from "@/lib/responsive";
 
 const MEAL_COLORS: Record<string, string> = {
   Breakfast: "#FF9500",
@@ -25,11 +27,17 @@ const MEAL_COLORS: Record<string, string> = {
 export default function GalleryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { logs } = useNutrition();
   const [filter, setFilter] = useState<"All" | "Breakfast" | "Lunch" | "Dinner" | "Snack">("All");
   const [query, setQuery] = useState("");
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const isTablet = isTabletWidth(width);
+  const isDesktop = isDesktopWidth(width);
+  const gridColumns = isDesktop ? 3 : isTablet ? 2 : 1;
+  const gridItemWidth = gridColumns === 1 ? "100%" : gridColumns === 2 ? "48%" : "31.8%";
+  const imageHeight = clampSize(width / gridColumns * 0.55, 170, 230);
 
   const normalised = query.trim().toLowerCase();
 
@@ -99,7 +107,11 @@ export default function GalleryScreen() {
             autoCapitalize="none"
           />
           {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity
+              onPress={() => setQuery("")}
+              style={styles.searchClearBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Feather name="x-circle" size={16} color={colors.mutedForeground} />
             </TouchableOpacity>
           )}
@@ -160,6 +172,7 @@ export default function GalleryScreen() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.content,
+          isDesktop && styles.desktopContent,
           {
             paddingBottom:
               Platform.OS === "web" ? 34 + 80 : insets.bottom + 80,
@@ -224,13 +237,21 @@ export default function GalleryScreen() {
             {logsWithImages.map((log) => (
               <TouchableOpacity
                 key={log.id}
-                style={[styles.gridItem, { borderRadius: 16, overflow: "hidden" }]}
+                style={[
+                  styles.gridItem,
+                  {
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    flexBasis: gridItemWidth,
+                    maxWidth: gridItemWidth,
+                  },
+                ]}
                 activeOpacity={0.85}
                 onPress={() => router.push({ pathname: "/meal-detail", params: { id: log.id } })}
               >
                 <Image
                   source={{ uri: log.imageUri! }}
-                  style={styles.gridImage}
+                  style={[styles.gridImage, { height: imageHeight }]}
                   resizeMode="cover"
                 />
                 <View style={styles.gridOverlay}>
@@ -339,9 +360,9 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24 },
   snapBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -357,12 +378,20 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 14,
+    minHeight: 48,
     paddingVertical: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 15,
     paddingVertical: 0,
+  },
+  searchClearBtn: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: -12,
   },
   filterScroll: { maxHeight: 52 },
   filterContent: {
@@ -372,9 +401,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   filterPill: {
+    minHeight: 44,
     paddingHorizontal: 16,
-    paddingVertical: 7,
+    paddingVertical: 10,
     borderRadius: 20,
+    justifyContent: "center",
   },
   filterText: { fontSize: 13 },
   resultsMeta: {
@@ -384,26 +415,32 @@ const styles = StyleSheet.create({
   resultsText: { fontSize: 12 },
   scroll: { flex: 1 },
   content: { padding: 16 },
+  desktopContent: { width: "100%", maxWidth: 960, alignSelf: "center" },
   empty: { alignItems: "center", gap: 12, paddingTop: 60 },
   emptyTitle: { fontSize: 18 },
   emptyText: { fontSize: 13, textAlign: "center", maxWidth: 240 },
   clearBtn: {
     marginTop: 4,
     paddingHorizontal: 20,
+    minHeight: 48,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
+    justifyContent: "center",
   },
   clearBtnText: { fontSize: 14 },
-  grid: { gap: 16 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
   gridItem: {
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
-  gridImage: { width: "100%", height: 200 },
+  gridImage: { width: "100%" },
   gridOverlay: {
     position: "absolute",
     top: 10,
@@ -425,14 +462,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 8,
   },
-  gridDish: { flex: 1, fontSize: 15 },
+  gridDish: { flex: 1, minWidth: 0, fontSize: 15 },
   mealBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 },
   mealBadgeText: { fontSize: 11 },
   gridMacros: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
   },
-  gridCal: { fontSize: 15 },
-  gridDate: { fontSize: 12 },
+  gridCal: { fontSize: 15, flexShrink: 0 },
+  gridDate: { fontSize: 12, flex: 1, minWidth: 0, textAlign: "right" },
 });
