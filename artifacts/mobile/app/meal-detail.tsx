@@ -132,7 +132,7 @@ export default function MealDetailScreen() {
             />
             {/* Overlay badges */}
             <View style={styles.imageBadges}>
-              <View style={[styles.autoBadge, { backgroundColor: "rgba(27,67,50,0.88)" }]}>
+              <View style={[styles.autoBadge, { backgroundColor: "rgba(11,47,31,0.88)" }]}>
                 <Feather name="check-circle" size={11} color="#fff" />
                 <Text style={[styles.autoBadgeText, { fontFamily: "Inter_600SemiBold" }]}>
                   Auto-Tracked

@@ -1,4 +1,4 @@
-export const PROFILE_GREEN = "#1a5c3a";
+export const PROFILE_GREEN = "#0B2F1F";
 
 type LocalStorageLike = {
   getItem: (key: string) => string | null;

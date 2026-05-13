@@ -1,42 +1,42 @@
 const colors = {
   light: {
-    text: "#0a0a0a",
-    tint: "#2D6A4F",
+    text: "#121A16",
+    tint: "#24F29A",
 
-    background: "#F4F7F5",
-    foreground: "#0a0a0a",
+    background: "#EAF1E8",
+    foreground: "#121A16",
 
-    card: "#FFFFFF",
-    cardForeground: "#1a1a1a",
+    card: "#F6F8F4",
+    cardForeground: "#121A16",
 
-    primary: "#2D6A4F",
-    primaryForeground: "#FFFFFF",
+    primary: "#121A16",
+    primaryForeground: "#F6F8F4",
 
-    darkGreen: "#1B4332",
-    vibrantGreen: "#2D6A4F",
-    lightGreen: "#40916C",
-    paleGreen: "#D8F3DC",
+    darkGreen: "#0B2F1F",
+    vibrantGreen: "#24F29A",
+    lightGreen: "#65F7B4",
+    paleGreen: "#DFFBEA",
 
-    secondary: "#F0F5F2",
-    secondaryForeground: "#1B4332",
+    secondary: "#EAF1E8",
+    secondaryForeground: "#121A16",
 
-    muted: "#EAF0ED",
-    mutedForeground: "#6B7E76",
+    muted: "#DCE8DF",
+    mutedForeground: "#607168",
 
-    accent: "#40916C",
-    accentForeground: "#FFFFFF",
+    accent: "#24F29A",
+    accentForeground: "#121A16",
 
     destructive: "#EF4444",
     destructiveForeground: "#FFFFFF",
 
-    border: "#D8E8E0",
-    input: "#E5EFE8",
+    border: "#C7D8CD",
+    input: "#EEF3EE",
 
     calorieOrange: "#FF6B35",
     proteinBlue: "#2196F3",
     carbsYellow: "#FFC107",
     fatRed: "#F44336",
-    fibreGreen: "#4CAF50",
+    fibreGreen: "#24F29A",
   },
   radius: 16,
 };

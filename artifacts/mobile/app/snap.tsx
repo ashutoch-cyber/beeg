@@ -300,14 +300,19 @@ export default function SnapScreen() {
             <TouchableOpacity
               style={[
                 styles.retryBtn,
-                { backgroundColor: colors.vibrantGreen },
+                { backgroundColor: colors.primary },
               ]}
               onPress={() => {
                 setScanState("idle");
                 setImageUri(null);
               }}
             >
-              <Text style={[styles.retryText, { fontFamily: "Inter_600SemiBold" }]}>
+              <Text
+                style={[
+                  styles.retryText,
+                  { color: colors.primaryForeground, fontFamily: "Inter_600SemiBold" },
+                ]}
+              >
                 Try Again
               </Text>
             </TouchableOpacity>
@@ -447,7 +452,7 @@ export default function SnapScreen() {
                       {
                         color:
                           selectedMeal === meal
-                            ? "#FFFFFF"
+                            ? colors.accentForeground
                             : colors.mutedForeground,
                         fontFamily:
                           selectedMeal === meal
@@ -539,11 +544,16 @@ export default function SnapScreen() {
               style={[
                 styles.logBtn,
                 isMobile && styles.mobileFullButton,
-                { backgroundColor: colors.vibrantGreen },
+                { backgroundColor: colors.primary },
               ]}
               onPress={handleLog}
             >
-              <Text style={[styles.logBtnText, { fontFamily: "Inter_700Bold" }]}>
+              <Text
+                style={[
+                  styles.logBtnText,
+                  { color: colors.primaryForeground, fontFamily: "Inter_700Bold" },
+                ]}
+              >
                 Log as {selectedMeal}
               </Text>
             </TouchableOpacity>
@@ -575,6 +585,7 @@ function MacroCard({
       style={[
         macroCardStyles.card,
         {
+          backgroundColor: colors.card,
           borderColor: colors.border,
           borderLeftColor: color,
           flexBasis: isDesktop ? "23%" : "48%",
@@ -613,7 +624,6 @@ const macroCardStyles = StyleSheet.create({
     flexShrink: 1,
     minWidth: 0,
     minHeight: 112,
-    backgroundColor: "#FFFFFF",
     borderRadius: 14,
     borderWidth: 1,
     padding: 16,
@@ -627,7 +637,7 @@ const macroCardStyles = StyleSheet.create({
   },
   value: { fontWeight: "700" },
   unit: { fontSize: 12, color: "#6B7E76", lineHeight: 16 },
-  label: { fontSize: 14, color: "#1B4332", marginTop: 8 },
+  label: { fontSize: 14, color: "#0B2F1F", marginTop: 8 },
 });
 
 const TIPS = [
@@ -684,7 +694,7 @@ const styles = StyleSheet.create({
   foodImage: { width: "100%" },
   scanOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(27,67,50,0.7)",
+    backgroundColor: "rgba(11,47,31,0.7)",
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
@@ -699,7 +709,7 @@ const styles = StyleSheet.create({
   },
   errorText: { fontSize: 14, textAlign: "center", lineHeight: 20 },
   retryBtn: { minHeight: 48, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, justifyContent: "center" },
-  retryText: { color: "#FFFFFF", fontSize: 15 },
+  retryText: { fontSize: 15 },
   resultsContainer: { gap: 16 },
   dishName: { fontSize: 22, lineHeight: 28 },
   macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
@@ -790,5 +800,5 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 16,
   },
-  logBtnText: { color: "#FFFFFF", fontSize: 16 },
+  logBtnText: { fontSize: 16 },
 });

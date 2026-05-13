@@ -208,7 +208,7 @@ export default function WeeklySummaryScreen() {
                     avg / day
                   </Text>
                   <View style={[styles.goalBadge, { backgroundColor: goalPct >= 0.9 ? "#E8F5E9" : colors.muted }]}>
-                    <Text style={[styles.goalBadgeText, { color: goalPct >= 0.9 ? "#2D6A4F" : colors.mutedForeground, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.goalBadgeText, { color: goalPct >= 0.9 ? colors.darkGreen : colors.mutedForeground, fontFamily: "Inter_600SemiBold" }]}>
                       {goalPctLabel}% of goal
                     </Text>
                   </View>

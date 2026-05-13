@@ -388,7 +388,7 @@ function ProfileRow({
       onPress={onPress}
       activeOpacity={0.86}
     >
-      <View style={[styles.rowIcon, { backgroundColor: "#E7F5EC" }]}>
+      <View style={[styles.rowIcon, { backgroundColor: colors.paleGreen }]}>
         <Feather name={icon} size={19} color={PROFILE_GREEN} />
       </View>
       <View style={styles.rowCopy}>
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#0f3d27",
+    backgroundColor: "#081F15",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#0f3d27",
+    backgroundColor: "#081F15",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,

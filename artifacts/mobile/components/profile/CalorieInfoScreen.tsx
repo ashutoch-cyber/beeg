@@ -208,7 +208,7 @@ export function CalorieInfoScreen({ onBack }: Props) {
                     style={[
                       styles.optionText,
                       {
-                        color: option === prefs.dietType ? PROFILE_GREEN : colors.foreground,
+                        color: option === prefs.dietType ? colors.vibrantGreen : colors.foreground,
                         fontFamily: option === prefs.dietType ? "Inter_700Bold" : "Inter_400Regular",
                       },
                     ]}
@@ -258,7 +258,7 @@ export function CalorieInfoScreen({ onBack }: Props) {
           <Text style={[styles.totalLabel, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}>
             Macronutrient Total:
           </Text>
-          <Text style={[styles.totalValue, { color: total === 100 ? PROFILE_GREEN : "#D32F2F", fontFamily: "Inter_700Bold" }]}>
+          <Text style={[styles.totalValue, { color: total === 100 ? colors.vibrantGreen : "#D32F2F", fontFamily: "Inter_700Bold" }]}>
             {total}%
           </Text>
         </View>

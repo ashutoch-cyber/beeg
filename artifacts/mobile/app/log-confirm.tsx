@@ -310,11 +310,16 @@ export default function LogConfirmScreen() {
           style={[
             styles.confirmBtn,
             isMobile && styles.mobileFullButton,
-            { backgroundColor: colors.vibrantGreen },
+            { backgroundColor: colors.primary },
           ]}
           onPress={handleConfirm}
         >
-          <Text style={[styles.confirmText, { fontFamily: "Inter_700Bold" }]}>
+          <Text
+            style={[
+              styles.confirmText,
+              { color: colors.primaryForeground, fontFamily: "Inter_700Bold" },
+            ]}
+          >
             Done
           </Text>
         </TouchableOpacity>
@@ -419,5 +424,5 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 16,
   },
-  confirmText: { color: "#FFFFFF", fontSize: 16 },
+  confirmText: { fontSize: 16 },
 });

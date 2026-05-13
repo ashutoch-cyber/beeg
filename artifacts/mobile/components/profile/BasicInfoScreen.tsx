@@ -157,8 +157,8 @@ export function BasicInfoScreen({ onBack, onSaved }: Props) {
                   style={[
                     styles.genderPill,
                     {
-                      backgroundColor: selected ? PROFILE_GREEN : colors.card,
-                      borderColor: selected ? PROFILE_GREEN : colors.border,
+                      backgroundColor: selected ? colors.vibrantGreen : colors.card,
+                      borderColor: selected ? colors.vibrantGreen : colors.border,
                     },
                   ]}
                   onPress={() => updateField("gender", gender)}
@@ -168,7 +168,7 @@ export function BasicInfoScreen({ onBack, onSaved }: Props) {
                     style={[
                       styles.genderText,
                       {
-                        color: selected ? "#FFFFFF" : colors.foreground,
+                        color: selected ? colors.accentForeground : colors.foreground,
                         fontFamily: selected ? "Inter_600SemiBold" : "Inter_400Regular",
                       },
                     ]}
@@ -222,7 +222,7 @@ function SegmentedToggle({
         return (
           <TouchableOpacity
             key={value}
-            style={[styles.segment, isSelected && { backgroundColor: PROFILE_GREEN }]}
+            style={[styles.segment, isSelected && { backgroundColor: colors.vibrantGreen }]}
             onPress={() => onSelect(value)}
             activeOpacity={0.85}
           >
@@ -230,7 +230,7 @@ function SegmentedToggle({
               style={[
                 styles.segmentText,
                 {
-                  color: isSelected ? "#FFFFFF" : colors.mutedForeground,
+                  color: isSelected ? colors.accentForeground : colors.mutedForeground,
                   fontFamily: "Inter_600SemiBold",
                 },
               ]}

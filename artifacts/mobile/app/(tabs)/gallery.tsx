@@ -76,10 +76,10 @@ export default function GalleryScreen() {
           Snap Gallery
         </Text>
         <TouchableOpacity
-          style={[styles.snapBtn, { backgroundColor: colors.vibrantGreen }]}
+          style={[styles.snapBtn, { backgroundColor: colors.primary }]}
           onPress={() => router.push("/snap")}
         >
-          <Feather name="camera" size={16} color="#FFFFFF" />
+          <Feather name="camera" size={16} color={colors.primaryForeground} />
         </TouchableOpacity>
       </View>
 
@@ -141,7 +141,7 @@ export default function GalleryScreen() {
               style={[
                 styles.filterText,
                 {
-                  color: filter === f ? "#FFFFFF" : colors.mutedForeground,
+                  color: filter === f ? colors.accentForeground : colors.mutedForeground,
                   fontFamily: filter === f ? "Inter_600SemiBold" : "Inter_400Regular",
                 },
               ]}
@@ -258,7 +258,7 @@ export default function GalleryScreen() {
                   <View
                     style={[
                       styles.autoTrackedBadge,
-                      { backgroundColor: "rgba(45, 106, 79, 0.9)" },
+                      { backgroundColor: "rgba(11, 47, 31, 0.9)" },
                     ]}
                   >
                     <Feather name="check-circle" size={10} color="#FFFFFF" />

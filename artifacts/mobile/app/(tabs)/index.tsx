@@ -206,13 +206,16 @@ export default function DashboardScreen() {
 
       {/* Snap Food FAB */}
       <TouchableOpacity
-        style={[styles.snapBtn, { backgroundColor: colors.vibrantGreen }]}
+        style={[styles.snapBtn, { backgroundColor: colors.primary }]}
         onPress={() => router.push("/snap")}
         activeOpacity={0.85}
       >
-        <Feather name="camera" size={22} color="#FFFFFF" />
+        <Feather name="camera" size={22} color={colors.primaryForeground} />
         <Text
-          style={[styles.snapBtnText, { fontFamily: "Inter_600SemiBold" }]}
+          style={[
+            styles.snapBtnText,
+            { color: colors.primaryForeground, fontFamily: "Inter_600SemiBold" },
+          ]}
         >
           Snap Food
         </Text>
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 24,
   },
-  snapBtnText: { color: "#FFFFFF", fontSize: 16 },
+  snapBtnText: { fontSize: 16 },
   mealsTitle: {
     fontSize: 17,
     paddingHorizontal: 20,

@@ -174,14 +174,14 @@ function GoalTypeStep({
                 styles.goalCard,
                 {
                   backgroundColor: colors.card,
-                  borderColor: isSelected ? PROFILE_GREEN : colors.border,
+                  borderColor: isSelected ? colors.vibrantGreen : colors.border,
                 },
               ]}
               onPress={() => onSelect(goal)}
               activeOpacity={0.88}
             >
-              <View style={[styles.goalIcon, { backgroundColor: isSelected ? PROFILE_GREEN : colors.muted }]}>
-                <Feather name={isSelected ? "check" : "target"} size={20} color={isSelected ? "#FFFFFF" : PROFILE_GREEN} />
+              <View style={[styles.goalIcon, { backgroundColor: isSelected ? colors.vibrantGreen : colors.muted }]}>
+                <Feather name={isSelected ? "check" : "target"} size={20} color={isSelected ? colors.accentForeground : PROFILE_GREEN} />
               </View>
               <Text
                 style={[
@@ -236,7 +236,7 @@ function TargetWeightStep({
       <Text style={[styles.stepSubtitle, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
         Set a realistic weight goal for yourself.
       </Text>
-      <View style={[styles.infoBanner, { backgroundColor: "#E7F5EC" }]}>
+      <View style={[styles.infoBanner, { backgroundColor: colors.paleGreen }]}>
         <Feather name="info" size={16} color={PROFILE_GREEN} />
         <Text style={[styles.infoText, { color: PROFILE_GREEN, fontFamily: "Inter_500Medium" }]}>
           {idealRange
@@ -258,14 +258,14 @@ function TargetWeightStep({
           return (
             <TouchableOpacity
               key={unit}
-              style={[styles.unitPill, selected && { backgroundColor: PROFILE_GREEN }]}
+              style={[styles.unitPill, selected && { backgroundColor: colors.vibrantGreen }]}
               onPress={() => onUnitChange(unit)}
               activeOpacity={0.85}
             >
               <Text
                 style={[
                   styles.unitText,
-                  { color: selected ? "#FFFFFF" : colors.mutedForeground, fontFamily: "Inter_700Bold" },
+                  { color: selected ? colors.accentForeground : colors.mutedForeground, fontFamily: "Inter_700Bold" },
                 ]}
               >
                 {unit}
@@ -447,8 +447,8 @@ function PaceSlider({ value, onChange }: { value: number; onChange: (value: numb
         style={[styles.sliderTrack, { backgroundColor: colors.border }]}
         onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width || 1)}
       >
-        <View style={[styles.sliderFill, { width: `${percentage}%` as any, backgroundColor: PROFILE_GREEN }]} />
-        <View style={[styles.sliderThumb, { left: `${percentage}%` as any, backgroundColor: PROFILE_GREEN }]} />
+        <View style={[styles.sliderFill, { width: `${percentage}%` as any, backgroundColor: colors.vibrantGreen }]} />
+        <View style={[styles.sliderThumb, { left: `${percentage}%` as any, backgroundColor: colors.vibrantGreen }]} />
       </View>
       <View style={styles.sliderLabels}>
         {[0.25, 0.5, 0.75, 1.0].map((label) => (
