@@ -9,6 +9,58 @@ if (!process.env.GEMINI_API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+const MEAL_KEYS = ["breakfast", "lunch", "dinner", "snack"] as const;
+type MealKey = (typeof MEAL_KEYS)[number];
+
+interface SupabaseUser {
+  id?: string;
+}
+
+interface FoodLogRow {
+  dish_name: string;
+  image_uri: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  logged_at: string;
+  meal_type: string;
+}
+
+interface FoodLogResponse {
+  dish_name: string;
+  image_uri: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  logged_at: string;
+}
+
+function getSupabaseConfig() {
+  const url = process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) return null;
+
+  return {
+    url: url.replace(/\/+$/, ""),
+    anonKey,
+  };
+}
+
+function isValidDateParam(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function normaliseMealType(mealType: string): MealKey | null {
+  const key = mealType.toLowerCase();
+  return MEAL_KEYS.includes(key as MealKey) ? (key as MealKey) : null;
+}
+
 const FOOD_SCAN_PROMPT = `You are a professional nutritionist and food analyst. Analyze this food image carefully.
 
 First, determine if the image contains food. 
@@ -45,6 +97,94 @@ Return a JSON object with this exact structure:
 
 Be precise and comprehensive. Do not simplify. Identify all visible components.
 Return ONLY the JSON object, no markdown, no extra text.`;
+
+foodRouter.get("/food/logs", async (req, res) => {
+  try {
+    const date = req.query.date;
+    if (typeof date !== "string" || !isValidDateParam(date)) {
+      res.status(400).json({ error: "date must be a valid YYYY-MM-DD string" });
+      return;
+    }
+
+    const authorization = req.headers.authorization;
+    if (!authorization?.startsWith("Bearer ")) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const supabaseConfig = getSupabaseConfig();
+    if (!supabaseConfig) {
+      res.status(500).json({ error: "Supabase is not configured" });
+      return;
+    }
+
+    const authResponse = await fetch(`${supabaseConfig.url}/auth/v1/user`, {
+      headers: {
+        apikey: supabaseConfig.anonKey,
+        authorization,
+      },
+    });
+
+    if (!authResponse.ok) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const user = (await authResponse.json()) as SupabaseUser;
+    if (!user.id) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const logsUrl = new URL(`${supabaseConfig.url}/rest/v1/food_logs`);
+    logsUrl.searchParams.set(
+      "select",
+      "dish_name,image_uri,calories,protein,carbs,fat,logged_at,meal_type",
+    );
+    logsUrl.searchParams.set("user_id", `eq.${user.id}`);
+    logsUrl.searchParams.set("date", `eq.${date}`);
+    logsUrl.searchParams.set("order", "logged_at.asc");
+
+    const logsResponse = await fetch(logsUrl, {
+      headers: {
+        apikey: supabaseConfig.anonKey,
+        authorization,
+        accept: "application/json",
+      },
+    });
+
+    if (!logsResponse.ok) {
+      const body = await logsResponse.text();
+      req.log.error({ status: logsResponse.status, body }, "Error fetching food logs");
+      res.status(500).json({ error: "Failed to fetch food logs" });
+      return;
+    }
+
+    const rows = (await logsResponse.json()) as FoodLogRow[];
+    const meals: Partial<Record<MealKey, FoodLogResponse[]>> = {};
+
+    for (const row of rows) {
+      const key = normaliseMealType(row.meal_type);
+      if (!key) continue;
+
+      meals[key] ??= [];
+      meals[key]?.push({
+        dish_name: row.dish_name,
+        image_uri: row.image_uri,
+        calories: row.calories,
+        protein: row.protein,
+        carbs: row.carbs,
+        fat: row.fat,
+        logged_at: row.logged_at,
+      });
+    }
+
+    res.json({ date, meals });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching food logs");
+    res.status(500).json({ error: "Failed to fetch food logs" });
+  }
+});
 
 foodRouter.post("/food/scan", async (req, res) => {
   try {

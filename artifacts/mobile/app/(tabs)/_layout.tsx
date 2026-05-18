@@ -20,6 +20,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "photo.on.rectangle", selected: "photo.fill.on.rectangle.fill" }} />
         <Label>Gallery</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="snap">
+        <Icon src={<VectorIcon family={Feather} name="camera" />} />
+        <Label>Snap</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="summary">
         <Icon src={<VectorIcon family={Feather} name="bar-chart-2" />} />
         <Label>Summary</Label>
@@ -89,6 +93,22 @@ function ClassicTabLayout() {
             ) : (
               <Feather name="image" size={22} color={color} />
             ),
+        }}
+      />
+      <Tabs.Screen
+        name="snap"
+        listeners={{
+          tabPress: (event) => {
+            event.preventDefault();
+            router.push("/snap");
+          },
+        }}
+        options={{
+          title: "Snap",
+          href: "/snap",
+          tabBarIcon: ({ color }) => (
+            <Feather name="camera" size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen

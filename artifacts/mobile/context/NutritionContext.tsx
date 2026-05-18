@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 export interface FoodIngredient {
   name: string;
@@ -91,6 +93,7 @@ function getCurrentMonth() {
 }
 
 export function NutritionProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [logs, setLogs] = useState<FoodLog[]>([]);
   const [goals, setGoals] = useState<DailyGoals>(DEFAULT_GOALS);
   const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
@@ -195,7 +198,29 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       AsyncStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(updated)).catch(() => {});
       return updated;
     });
-  }, []);
+
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.from("food_logs").insert({
+        user_id: user.id,
+        date: log.date,
+        meal_type: log.mealType,
+        dish_name: log.dishName,
+        image_uri: log.imageUri ?? null,
+        calories: log.totals.calories,
+        protein: log.totals.protein,
+        carbs: log.totals.carbs,
+        fat: log.totals.fat,
+      });
+
+      if (error) {
+        console.error("Failed to sync food log to Supabase", error);
+      }
+    } catch (error) {
+      console.error("Failed to sync food log to Supabase", error);
+    }
+  }, [user]);
 
   const removeLog = useCallback(async (id: string) => {
     setLogs((prev) => {
