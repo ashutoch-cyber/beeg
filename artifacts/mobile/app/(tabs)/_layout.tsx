@@ -5,7 +5,7 @@ import { Icon, Label, NativeTabs, VectorIcon } from "expo-router/unstable-native
 import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View, useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 
@@ -42,6 +42,7 @@ function ClassicTabLayout() {
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+  const tabBarHeight = isWeb ? 84 : 60;
 
   return (
     <Tabs
@@ -70,6 +71,107 @@ function ClassicTabLayout() {
             />
           ) : null,
       }}
+      tabBar={({ state, navigation }) => {
+        const getRoute = (name: string) => state.routes.find((route) => route.name === name);
+        const renderTab = (
+          name: string,
+          label: string,
+          icon: (color: string) => React.ReactNode,
+        ) => {
+          const route = getRoute(name);
+          if (!route) return null;
+
+          const routeIndex = state.routes.indexOf(route);
+          const focused = state.index === routeIndex;
+          const color = focused ? colors.ctaDarkGreen : colors.mutedForeground;
+
+          return (
+            <Pressable
+              key={name}
+              accessibilityRole="button"
+              accessibilityLabel={label}
+              onPress={() => {
+                const event = navigation.emit({
+                  type: "tabPress",
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+
+                if (!focused && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params);
+                }
+              }}
+              style={styles.tabItem}
+            >
+              {icon(color)}
+              <Text style={[styles.tabLabel, { color, fontFamily: "Inter_500Medium" }]}>
+                {label}
+              </Text>
+            </Pressable>
+          );
+        };
+
+        return (
+          <View
+            style={[
+              styles.customTabBar,
+              {
+                height: tabBarHeight,
+                backgroundColor: isIOS ? "transparent" : colors.card,
+                borderTopColor: colors.border,
+              },
+            ]}
+          >
+            {isIOS ? (
+              <BlurView
+                intensity={100}
+                tint={isDark ? "dark" : "light"}
+                style={StyleSheet.absoluteFill}
+              />
+            ) : isWeb ? (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.card }]} />
+            ) : null}
+            {renderTab("index", "Dashboard", (color) =>
+              isIOS ? (
+                <SymbolView name="house" tintColor={color} size={24} />
+              ) : (
+                <Feather name="home" size={22} color={color} />
+              ),
+            )}
+            {renderTab("gallery", "Gallery", (color) =>
+              isIOS ? (
+                <SymbolView name="photo.on.rectangle" tintColor={color} size={24} />
+              ) : (
+                <Feather name="image" size={22} color={color} />
+              ),
+            )}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Snap"
+              onPress={() => router.push("/snap")}
+              style={styles.snapTabItem}
+            >
+              <View
+                style={[
+                  styles.snapTabButton,
+                  {
+                    backgroundColor: colors.ctaDarkGreen,
+                    shadowColor: colors.ctaDarkGreen,
+                  },
+                ]}
+              >
+                <Feather name="camera" size={30} color={colors.whiteTextOnGreen} />
+              </View>
+            </Pressable>
+            {renderTab("summary", "Summary", (color) => (
+              <Feather name="bar-chart-2" size={22} color={color} />
+            ))}
+            {renderTab("profile", "Profile", (color) => (
+              <Feather name="user" size={22} color={color} />
+            ))}
+          </View>
+        );
+      }}
     >
       <Tabs.Screen
         name="index"
@@ -93,32 +195,6 @@ function ClassicTabLayout() {
             ) : (
               <Feather name="image" size={22} color={color} />
             ),
-        }}
-      />
-      <Tabs.Screen
-        name="snap"
-        listeners={{
-          tabPress: (event) => {
-            event.preventDefault();
-            router.push("/snap");
-          },
-        }}
-        options={{
-          title: "Snap",
-          href: "/snap",
-          tabBarIcon: () => (
-            <View
-              style={[
-                styles.snapTabButton,
-                {
-                  backgroundColor: colors.ctaDarkGreen,
-                  shadowColor: colors.ctaDarkGreen,
-                },
-              ]}
-            >
-              <Feather name="camera" size={28} color={colors.whiteTextOnGreen} />
-            </View>
-          ),
         }}
       />
       <Tabs.Screen
@@ -150,20 +226,45 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
-    return <NativeTabLayout />;
-  }
   return <ClassicTabLayout />;
 }
 
 const styles = StyleSheet.create({
-  snapTabButton: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+  customTabBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: 1,
+    elevation: 0,
+    overflow: "visible",
+  },
+  tabItem: {
+    flex: 1,
+    height: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -26,
+    gap: 2,
+  },
+  tabLabel: {
+    fontSize: 10,
+  },
+  snapTabItem: {
+    flex: 1,
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible",
+  },
+  snapTabButton: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -30,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
