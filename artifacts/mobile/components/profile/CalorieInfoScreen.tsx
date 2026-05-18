@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import palette from "@/constants/colors";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { isDesktopWidth } from "@/lib/responsive";
@@ -225,7 +226,7 @@ export function CalorieInfoScreen({ onBack }: Props) {
           {rows.map((row) => (
             <View key={row.key} style={[styles.macroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.macroHeader}>
-                <View style={[styles.macroIcon, { backgroundColor: row.color + "20" }]}>
+                <View style={[styles.macroIcon, { backgroundColor: colors.lightAccentGreen }]}>
                   <Feather name={row.icon} size={18} color={row.color} />
                 </View>
                 <View style={styles.macroTextWrap}>
@@ -258,7 +259,7 @@ export function CalorieInfoScreen({ onBack }: Props) {
           <Text style={[styles.totalLabel, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}>
             Macronutrient Total:
           </Text>
-          <Text style={[styles.totalValue, { color: total === 100 ? colors.vibrantGreen : "#D32F2F", fontFamily: "Inter_700Bold" }]}>
+          <Text style={[styles.totalValue, { color: total === 100 ? colors.highlightGreen : colors.fatRed, fontFamily: "Inter_700Bold" }]}>
             {total}%
           </Text>
         </View>
@@ -284,7 +285,7 @@ export function CalorieInfoScreen({ onBack }: Props) {
 
       {toast ? (
         <View style={styles.toast}>
-          <Feather name="check" size={16} color="#FFFFFF" />
+          <Feather name="check" size={16} color={colors.whiteTextOnGreen} />
           <Text style={[styles.toastText, { fontFamily: "Inter_600SemiBold" }]}>{toast}</Text>
         </View>
       ) : null}
@@ -444,7 +445,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  saveText: { color: "#FFFFFF", fontSize: 17 },
+  saveText: { color: palette.light.whiteTextOnGreen, fontSize: 17 },
   toast: {
     position: "absolute",
     left: 20,
@@ -458,5 +459,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  toastText: { color: "#FFFFFF", fontSize: 14 },
+  toastText: { color: palette.light.whiteTextOnGreen, fontSize: 14 },
 });

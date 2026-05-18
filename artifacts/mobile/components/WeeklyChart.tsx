@@ -90,7 +90,7 @@ export function WeeklyChart() {
               key={m.key}
               style={[
                 styles.toggleBtn,
-                active && { backgroundColor: colors.card, shadowColor: "#000" },
+                active && { backgroundColor: colors.card, shadowColor: colors.primaryText },
               ]}
               onPress={() => setMetric(m.key)}
               activeOpacity={0.7}

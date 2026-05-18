@@ -6,12 +6,12 @@
     <title>Bee — AI Food Tracker</title>
     <meta name="description" content="Snap a photo of your meal and get instant nutrition breakdown powered by AI." />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0B2F1F" />
+    <meta name="theme-color" content="#4A7C59" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Bee" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='180' height='180' rx='36' fill='%230B2F1F'/%3E%3Ctext x='90' y='120' font-size='90' text-anchor='middle' fill='white'%3E🥗%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='180' height='180' rx='36' fill='%234A7C59'/%3E%3Ctext x='90' y='120' font-size='90' text-anchor='middle' fill='%23FFFFFF'%3E🥗%3C/text%3E%3C/svg%3E" />
     <style>
       html {
         font-size: 16px;
@@ -23,15 +23,15 @@
       *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
 
       :root {
-        --dark-green: #0B2F1F;
-        --vibrant-green: #24F29A;
-        --light-green: #65F7B4;
-        --pale-green: #DFFBEA;
-        --text: #121A16;
-        --muted: #607168;
-        --border: #C7D8CD;
-        --card: #F6F8F4;
-        --bg: #EAF1E8;
+        --dark-green: #4A7C59;
+        --vibrant-green: #6A9E7A;
+        --light-green: #8BBD97;
+        --pale-green: #C8DEC0;
+        --text: #1F2A22;
+        --muted: #8A9E8D;
+        --border: #D9CFC3;
+        --card: #FAF7F2;
+        --bg: #F5EFE6;
       }
 
       body {
@@ -47,7 +47,7 @@
       /* ── Hero ── */
       .hero {
         background: linear-gradient(160deg, var(--dark-green) 0%, var(--vibrant-green) 100%);
-        color: white;
+        color: #FFFFFF;
         padding: 64px 24px 80px;
         text-align: center;
         position: relative;
@@ -92,21 +92,21 @@
       .btn-primary {
         display: inline-flex; align-items: center; gap: 8px;
         padding: 14px 28px;
-        background: white;
+        background: #FFFFFF;
         color: var(--dark-green);
         font-size: 15px; font-weight: 700;
         border-radius: 12px;
         text-decoration: none;
         border: none; cursor: pointer;
         transition: opacity 0.15s, transform 0.15s;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        box-shadow: 0 4px 16px rgba(31,42,34,0.18);
       }
       .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
       .btn-secondary {
         display: inline-flex; align-items: center; gap: 8px;
         padding: 14px 28px;
         background: rgba(255,255,255,0.12);
-        color: white;
+        color: #FFFFFF;
         font-size: 15px; font-weight: 600;
         border-radius: 12px;
         text-decoration: none;
@@ -182,7 +182,7 @@
       }
       .device-steps li {
         display: flex; gap: 9px;
-        font-size: 13px; color: #374151;
+        font-size: 13px; color: #4D5E51;
         line-height: 1.4;
       }
       .step-dot {
@@ -202,7 +202,7 @@
         display: inline-flex; align-items: center; gap: 6px;
         padding: 9px 16px;
         background: var(--dark-green);
-        color: white;
+        color: #FFFFFF;
         font-size: 13px; font-weight: 600;
         border-radius: 8px;
         text-decoration: none;
@@ -225,7 +225,7 @@
         gap: 32px;
         align-items: center;
         flex-wrap: wrap;
-        color: white;
+        color: #FFFFFF;
       }
       .qr-text { flex: 1; min-width: 200px; }
       .qr-text h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
@@ -237,7 +237,7 @@
         background: rgba(255,255,255,0.12);
         border: 1px solid rgba(255,255,255,0.25);
         border-radius: 10px;
-        color: white;
+        color: #FFFFFF;
         font-size: 13px; font-weight: 600;
         text-decoration: none;
         transition: background 0.15s;
@@ -245,7 +245,7 @@
       .store-btn:hover { background: rgba(255,255,255,0.22); }
       .qr-box {
         width: 160px; height: 160px;
-        background: white;
+        background: #FFFFFF;
         border-radius: 12px;
         padding: 10px;
         flex-shrink: 0;
@@ -276,15 +276,15 @@
       #install-banner {
         display: none;
         position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-        background: var(--dark-green); color: white;
+        background: var(--dark-green); color: #FFFFFF;
         padding: 14px 22px; border-radius: 14px;
         font-size: 14px; font-weight: 600;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        box-shadow: 0 8px 32px rgba(31,42,34,0.25);
         display: none; align-items: center; gap: 12px;
         z-index: 100; white-space: nowrap;
       }
       #install-banner button {
-        background: white; color: var(--dark-green);
+        background: #FFFFFF; color: var(--dark-green);
         border: none; padding: 8px 16px; border-radius: 8px;
         font-weight: 700; cursor: pointer; font-size: 13px;
       }
@@ -361,7 +361,7 @@
         <!-- Web / Desktop -->
         <div class="device-card">
           <div class="device-header">
-            <div class="device-icon" style="background:#EFF6FF;">🖥️</div>
+            <div class="device-icon" style="background:#C8DEC0;">🖥️</div>
             <div>
               <div class="device-name">Mac & Windows</div>
               <div class="device-sub">Any desktop browser</div>
@@ -380,7 +380,7 @@
         <!-- iPhone / iPad -->
         <div class="device-card">
           <div class="device-header">
-            <div class="device-icon" style="background:#F5F3FF;">🍎</div>
+            <div class="device-icon" style="background:#C8DEC0;">🍎</div>
             <div>
               <div class="device-name">iPhone &amp; iPad</div>
               <div class="device-sub">iOS 16+</div>
@@ -401,7 +401,7 @@
         <!-- Android -->
         <div class="device-card">
           <div class="device-header">
-            <div class="device-icon" style="background:#F0FDF4;">🤖</div>
+            <div class="device-icon" style="background:#C8DEC0;">🤖</div>
             <div>
               <div class="device-name">Android</div>
               <div class="device-sub">Android 8+</div>
@@ -422,7 +422,7 @@
         <!-- Tablet / TV / Other -->
         <div class="device-card">
           <div class="device-header">
-            <div class="device-icon" style="background:#FFF7ED;">📱</div>
+            <div class="device-icon" style="background:#C8DEC0;">📱</div>
             <div>
               <div class="device-name">Tablets &amp; other</div>
               <div class="device-sub">Any modern browser</div>
@@ -484,8 +484,8 @@
           const qrCode = new QRCodeStyling({
             width: 400, height: 400,
             data: deepLink,
-            dotsOptions: { color: "#0B2F1F", type: "rounded" },
-            backgroundOptions: { color: "#ffffff" },
+            dotsOptions: { color: "#4A7C59", type: "rounded" },
+            backgroundOptions: { color: "#FFFFFF" },
             cornersSquareOptions: { type: "extra-rounded" },
             cornersDotOptions: { type: "dot" },
             qrOptions: { errorCorrectionLevel: "H" },

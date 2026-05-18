@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import palette from "@/constants/colors";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth } from "@/lib/responsive";
@@ -77,7 +78,7 @@ export default function LogConfirmScreen() {
         ]}
       >
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color="#FFFFFF" />
+          <Feather name="arrow-left" size={24} color={colors.whiteTextOnGreen} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]}>
           Confirm Log
@@ -117,7 +118,7 @@ export default function LogConfirmScreen() {
             <Text
               style={[
                 styles.mealType,
-                { color: colors.vibrantGreen, fontFamily: "Inter_600SemiBold" },
+                { color: colors.ctaDarkGreen, fontFamily: "Inter_600SemiBold" },
               ]}
             >
               {mealType}
@@ -126,7 +127,7 @@ export default function LogConfirmScreen() {
           <Text
             style={[
               styles.dishName,
-              { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
             ]}
           >
             {result.dishName}
@@ -136,10 +137,10 @@ export default function LogConfirmScreen() {
         {/* Macro Cards */}
         <View style={styles.macroGrid}>
           {[
-            { label: "Calories", value: result.totals.calories, unit: "kcal", color: "#FF6B35" },
-            { label: "Protein", value: result.totals.protein, unit: "g", color: "#2196F3" },
-            { label: "Carbs", value: result.totals.carbs, unit: "g", color: "#FFC107" },
-            { label: "Fat", value: result.totals.fat, unit: "g", color: "#F44336" },
+            { label: "Calories", value: result.totals.calories, unit: "kcal", color: colors.fatRed },
+            { label: "Protein", value: result.totals.protein, unit: "g", color: colors.proteinBlue },
+            { label: "Carbs", value: result.totals.carbs, unit: "g", color: colors.carbsYellow },
+            { label: "Fat", value: result.totals.fat, unit: "g", color: colors.fatRed },
           ].map((m) => (
             <View
               key={m.label}
@@ -178,7 +179,7 @@ export default function LogConfirmScreen() {
               <Text
                 style={[
                   styles.macroLabel,
-                  { color: colors.foreground, fontFamily: "Inter_500Medium" },
+                  { color: colors.bodyText, fontFamily: "Inter_500Medium" },
                 ]}
               >
                 {m.label}
@@ -197,7 +198,7 @@ export default function LogConfirmScreen() {
           <Text
             style={[
               styles.listTitle,
-              { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
             ]}
           >
             Ingredient breakdown
@@ -219,7 +220,7 @@ export default function LogConfirmScreen() {
                       style={[
                         styles.ingName,
                         {
-                          color: colors.foreground,
+                          color: colors.bodyText,
                           fontFamily: "Inter_600SemiBold",
                         },
                       ]}
@@ -254,12 +255,12 @@ export default function LogConfirmScreen() {
             )
           )}
           <View
-            style={[styles.totalRow, { borderTopColor: colors.darkGreen }]}
+            style={[styles.totalRow, { borderTopColor: colors.primaryGreen }]}
           >
             <Text
               style={[
                 styles.totalLabel,
-                { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+                { color: colors.primaryText, fontFamily: "Inter_700Bold" },
               ]}
             >
               Total
@@ -267,7 +268,7 @@ export default function LogConfirmScreen() {
             <Text
               style={[
                 styles.totalCal,
-                { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+                { color: colors.primaryText, fontFamily: "Inter_700Bold" },
               ]}
             >
               {Math.round(result.totals.calories)} Cal
@@ -293,14 +294,14 @@ export default function LogConfirmScreen() {
           style={[
             styles.cancelBtn,
             isMobile && styles.mobileFullButton,
-            { backgroundColor: colors.muted, borderColor: colors.border },
+            { backgroundColor: colors.cardBackground, borderColor: colors.border },
           ]}
           onPress={() => router.back()}
         >
           <Text
             style={[
               styles.cancelText,
-              { color: colors.darkGreen, fontFamily: "Inter_600SemiBold" },
+              { color: colors.ctaDarkGreen, fontFamily: "Inter_600SemiBold" },
             ]}
           >
             Edit
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { fontSize: 18, color: "#FFFFFF" },
+  headerTitle: { fontSize: 18, color: palette.light.whiteTextOnGreen },
   scroll: { flex: 1 },
   content: { padding: 16, gap: 16 },
   desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },

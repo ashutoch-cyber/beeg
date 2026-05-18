@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import palette from "@/constants/colors";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth } from "@/lib/responsive";
@@ -175,7 +176,7 @@ export default function SnapScreen() {
         ]}
       >
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="x" size={24} color="#FFFFFF" />
+          <Feather name="x" size={24} color={colors.whiteTextOnGreen} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]}>
           Snap Food
@@ -199,9 +200,9 @@ export default function SnapScreen() {
       >
         {/* Limit warning banner */}
         {(atLimit || nearLimit) && scanState === "idle" && (
-          <View style={[styles.limitBanner, { backgroundColor: atLimit ? "#FFF3F3" : "#FFFBEB", borderColor: atLimit ? "#FFCDD2" : "#FFE082" }]}>
-            <Feather name="alert-triangle" size={16} color={atLimit ? "#F44336" : "#F59E0B"} />
-            <Text style={[styles.limitBannerText, { color: atLimit ? "#F44336" : "#92400E", fontFamily: "Inter_500Medium" }]}>
+          <View style={[styles.limitBanner, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <Feather name="alert-triangle" size={16} color={atLimit ? colors.fatRed : colors.carbsYellow} />
+            <Text style={[styles.limitBannerText, { color: atLimit ? colors.fatRed : colors.bodyText, fontFamily: "Inter_500Medium" }]}>
               {atLimit
                 ? `Daily limit reached (${todayScans}/${scanLimit} scans). Update in Goals & Usage.`
                 : `${todayScans}/${scanLimit} scans used today — almost at your limit.`}
@@ -229,14 +230,14 @@ export default function SnapScreen() {
                       { backgroundColor: colors.paleGreen },
                     ]}
                   >
-                    <Feather name={tip.icon as any} size={16} color={colors.vibrantGreen} />
+                    <Feather name={tip.icon as any} size={16} color={colors.buttonGreen} />
                   </View>
                   <View style={styles.tipText}>
                     <Text
                       style={[
                         styles.tipLabel,
                         {
-                          color: colors.foreground,
+                          color: colors.bodyText,
                           fontFamily: "Inter_600SemiBold",
                         },
                       ]}
@@ -271,7 +272,7 @@ export default function SnapScreen() {
             />
             {scanState === "detecting" && (
               <View style={[styles.scanOverlay, { borderRadius: 20 }]}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
+                <ActivityIndicator size="large" color={colors.whiteTextOnGreen} />
                 <Text style={[styles.detectingText, { fontFamily: "Inter_600SemiBold" }]}>
                   Detecting ingredients...
                 </Text>
@@ -285,7 +286,7 @@ export default function SnapScreen() {
           <View
             style={[
               styles.errorCard,
-              { backgroundColor: "#FFF3F3", borderColor: "#FFCDD2" },
+              { backgroundColor: colors.cardBackground, borderColor: colors.border },
             ]}
           >
             <Feather name="alert-circle" size={28} color={colors.fatRed} />
@@ -333,10 +334,10 @@ export default function SnapScreen() {
 
             {/* Macro Cards 2x2 */}
             <View style={styles.macroGrid}>
-              <MacroCard label="Calories" value={result.totals.calories} unit="kcal" color="#FF6B35" />
-              <MacroCard label="Protein" value={result.totals.protein} unit="g" color="#2196F3" />
-              <MacroCard label="Carbs" value={result.totals.carbs} unit="g" color="#FFC107" />
-              <MacroCard label="Fat" value={result.totals.fat} unit="g" color="#F44336" />
+              <MacroCard label="Calories" value={result.totals.calories} unit="kcal" color={colors.fatRed} />
+              <MacroCard label="Protein" value={result.totals.protein} unit="g" color={colors.proteinBlue} />
+              <MacroCard label="Carbs" value={result.totals.carbs} unit="g" color={colors.carbsYellow} />
+              <MacroCard label="Fat" value={result.totals.fat} unit="g" color={colors.fatRed} />
             </View>
 
             {/* Ingredient Breakdown */}
@@ -450,7 +451,7 @@ export default function SnapScreen() {
                     style={[
                       styles.mealPillText,
                       {
-                        color:
+                            color:
                           selectedMeal === meal
                             ? colors.accentForeground
                             : colors.mutedForeground,
@@ -488,11 +489,11 @@ export default function SnapScreen() {
               style={[
                 styles.captureBtn,
                 isMobile && styles.mobileFullButton,
-                { backgroundColor: colors.darkGreen },
+                { backgroundColor: colors.ctaDarkGreen },
               ]}
               onPress={() => pickImage(true)}
             >
-              <Feather name="camera" size={20} color="#FFFFFF" />
+              <Feather name="camera" size={20} color={colors.whiteTextOnGreen} />
               <Text style={[styles.captureBtnText, { fontFamily: "Inter_600SemiBold" }]}>
                 Take Photo
               </Text>
@@ -629,15 +630,15 @@ const macroCardStyles = StyleSheet.create({
     padding: 16,
     justifyContent: "space-between",
     borderLeftWidth: 4,
-    shadowColor: "#000",
+    shadowColor: palette.light.primaryText,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
   },
   value: { fontWeight: "700" },
-  unit: { fontSize: 12, color: "#6B7E76", lineHeight: 16 },
-  label: { fontSize: 14, color: "#0B2F1F", marginTop: 8 },
+  unit: { fontSize: 12, color: palette.light.mutedText, lineHeight: 16 },
+  label: { fontSize: 14, color: palette.light.primaryText, marginTop: 8 },
 });
 
 const TIPS = [
@@ -678,7 +679,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 18, color: "#FFFFFF" },
+  headerTitle: { fontSize: 18, color: palette.light.whiteTextOnGreen },
   scrollView: { flex: 1 },
   scrollContent: { padding: 16, gap: 20 },
   desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },
@@ -694,12 +695,12 @@ const styles = StyleSheet.create({
   foodImage: { width: "100%" },
   scanOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(11,47,31,0.7)",
+    backgroundColor: palette.light.primaryGreenOverlay70,
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
   },
-  detectingText: { color: "#FFFFFF", fontSize: 16 },
+  detectingText: { color: palette.light.whiteTextOnGreen, fontSize: 16 },
   errorCard: {
     borderRadius: 20,
     borderWidth: 1,
@@ -765,7 +766,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 16,
   },
-  captureBtnText: { color: "#FFFFFF", fontSize: 16 },
+  captureBtnText: { color: palette.light.whiteTextOnGreen, fontSize: 16 },
   galleryBtn: {
     flex: 1,
     width: "100%",

@@ -30,7 +30,7 @@ export function CalorieRing({ consumed, goal, size = 200 }: CalorieRingProps) {
           cx={center}
           cy={center}
           r={radius}
-          stroke={colors.muted}
+          stroke={colors.primaryGreenOverlay40}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -38,7 +38,7 @@ export function CalorieRing({ consumed, goal, size = 200 }: CalorieRingProps) {
           cx={center}
           cy={center}
           r={radius}
-          stroke={isOver ? colors.calorieOrange : colors.vibrantGreen}
+          stroke={colors.whiteTextOnGreen}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
@@ -53,7 +53,7 @@ export function CalorieRing({ consumed, goal, size = 200 }: CalorieRingProps) {
           style={[
             styles.consumed,
             {
-              color: colors.darkGreen,
+              color: colors.whiteTextOnGreen,
               fontFamily: "Inter_700Bold",
               fontSize: consumedSize,
               lineHeight: consumedSize + 6,
@@ -62,11 +62,11 @@ export function CalorieRing({ consumed, goal, size = 200 }: CalorieRingProps) {
         >
           {Math.round(consumed)}
         </Text>
-        <Text style={[styles.label, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.label, { color: colors.whiteOverlay70, fontFamily: "Inter_400Regular" }]}>
           of {goal} Cal
         </Text>
-        <View style={[styles.remainingBadge, { backgroundColor: colors.paleGreen }]}>
-          <Text style={[styles.remainingText, { color: colors.vibrantGreen, fontFamily: "Inter_600SemiBold" }]}>
+        <View style={[styles.remainingBadge, { backgroundColor: colors.lightAccentGreen }]}>
+          <Text style={[styles.remainingText, { color: colors.ctaDarkGreen, fontFamily: "Inter_600SemiBold" }]}>
             {isOver ? `+${Math.round(consumed - goal)} over` : `${Math.round(remaining)} left`}
           </Text>
         </View>

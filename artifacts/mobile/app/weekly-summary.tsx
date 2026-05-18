@@ -17,14 +17,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ViewShot from "react-native-view-shot";
+import palette from "@/constants/colors";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 const MACRO_COLORS = {
-  protein: "#2196F3",
-  carbs: "#FFC107",
-  fat: "#F44336",
+  protein: palette.light.macroProteinColor,
+  carbs: palette.light.macroCarbsColor,
+  fat: palette.light.macroFatColor,
 };
 
 function getWeekRange() {
@@ -139,7 +140,7 @@ export default function WeeklySummaryScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPadding + 12, backgroundColor: colors.darkGreen }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="x" size={24} color="#FFFFFF" />
+          <Feather name="x" size={24} color={colors.whiteTextOnGreen} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]}>Weekly Summary</Text>
         <TouchableOpacity
@@ -147,7 +148,7 @@ export default function WeeklySummaryScreen() {
           style={[styles.shareBtn, saving && { opacity: 0.6 }]}
           disabled={saving}
         >
-          <Feather name="share-2" size={18} color="#FFFFFF" />
+          <Feather name="share-2" size={18} color={colors.whiteTextOnGreen} />
           <Text style={[styles.shareBtnText, { fontFamily: "Inter_600SemiBold" }]}>
             {saving ? "Saving…" : "Share"}
           </Text>
@@ -170,9 +171,9 @@ export default function WeeklySummaryScreen() {
         >
           <View style={[styles.card, { backgroundColor: colors.card }]}>
             {/* Card header */}
-            <View style={[styles.cardHeader, { backgroundColor: colors.darkGreen }]}>
+            <View style={[styles.cardHeader, { backgroundColor: colors.ctaDarkGreen }]}>
               <View style={styles.cardBrand}>
-                <Feather name="zap" size={22} color="#FFD700" />
+                <Feather name="zap" size={22} color={colors.streakLightning} />
                 <Text style={[styles.brandName, { fontFamily: "Inter_700Bold" }]}>Bee</Text>
               </View>
               <Text style={[styles.weekLabel, { fontFamily: "Inter_400Regular" }]}>{weekLabel}</Text>
@@ -186,7 +187,7 @@ export default function WeeklySummaryScreen() {
                     style={[
                       styles.calBig,
                       {
-                        color: "#FF6B35",
+                        color: colors.fatRed,
                         fontFamily: "Inter_700Bold",
                         fontSize: totalCaloriesSize,
                         lineHeight: totalCaloriesSize + 4,
@@ -201,14 +202,14 @@ export default function WeeklySummaryScreen() {
                 </View>
                 <View style={[styles.calDivider, { backgroundColor: colors.border }]} />
                 <View style={styles.calSide}>
-                  <Text style={[styles.calAvgNum, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+                  <Text style={[styles.calAvgNum, { color: colors.primaryText, fontFamily: "Inter_700Bold" }]}>
                     {avgCal.toLocaleString()}
                   </Text>
                   <Text style={[styles.calAvgLabel, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
                     avg / day
                   </Text>
-                  <View style={[styles.goalBadge, { backgroundColor: goalPct >= 0.9 ? "#E8F5E9" : colors.muted }]}>
-                    <Text style={[styles.goalBadgeText, { color: goalPct >= 0.9 ? colors.darkGreen : colors.mutedForeground, fontFamily: "Inter_600SemiBold" }]}>
+                  <View style={[styles.goalBadge, { backgroundColor: colors.cardBackground }]}>
+                    <Text style={[styles.goalBadgeText, { color: colors.mutedText, fontFamily: "Inter_600SemiBold" }]}>
                       {goalPctLabel}% of goal
                     </Text>
                   </View>
@@ -222,7 +223,7 @@ export default function WeeklySummaryScreen() {
                   { label: "Carbs", value: totalCarbs, color: MACRO_COLORS.carbs },
                   { label: "Fat", value: totalFat, color: MACRO_COLORS.fat },
                 ] as const).map((m) => (
-                  <View key={m.label} style={[styles.macroPill, { borderColor: m.color, backgroundColor: m.color + "15" }]}>
+                  <View key={m.label} style={[styles.macroPill, { borderColor: m.color, backgroundColor: colors.cardBackground }]}>
                     <Text
                       style={[
                         styles.macroPillVal,
@@ -243,7 +244,7 @@ export default function WeeklySummaryScreen() {
 
               {/* 7-day bar chart */}
               <View style={styles.chartSection}>
-                <Text style={[styles.chartTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+                <Text style={[styles.chartTitle, { color: colors.primaryText, fontFamily: "Inter_700Bold" }]}>
                   Calories per day
                 </Text>
                 <View style={styles.barChart}>
@@ -253,21 +254,21 @@ export default function WeeklySummaryScreen() {
                     return (
                       <View key={i} style={styles.barCol}>
                         {d.calories > 0 && (
-                          <Text style={[styles.barVal, { color: isToday ? colors.darkGreen : colors.mutedForeground, fontFamily: "Inter_600SemiBold" }]}>
+                          <Text style={[styles.barVal, { color: isToday ? colors.bodyText : colors.mutedText, fontFamily: "Inter_600SemiBold" }]}>
                             {Math.round(d.calories / 100) * 100 >= 1000
                               ? `${(d.calories / 1000).toFixed(1)}k`
                               : Math.round(d.calories)}
                           </Text>
                         )}
-                        <View style={[styles.barTrack, { backgroundColor: colors.muted }]}>
+                        <View style={[styles.barTrack, { backgroundColor: colors.lightAccentGreen }]}>
                           <View style={[styles.barFill, {
                             height: h,
-                            backgroundColor: isToday ? colors.darkGreen : colors.vibrantGreen,
+                            backgroundColor: colors.highlightGreen,
                             opacity: isToday ? 1 : 0.7,
                           }]} />
                         </View>
                         <Text style={[styles.barDay, {
-                          color: isToday ? colors.darkGreen : colors.mutedForeground,
+                          color: isToday ? colors.bodyText : colors.mutedText,
                           fontFamily: isToday ? "Inter_700Bold" : "Inter_400Regular",
                         }]}>{d.label}</Text>
                       </View>
@@ -277,9 +278,9 @@ export default function WeeklySummaryScreen() {
               </View>
 
               {/* Scan badge */}
-              <View style={[styles.scanBadge, { backgroundColor: colors.muted }]}>
-                <Feather name="zap" size={14} color={colors.vibrantGreen} />
-                <Text style={[styles.scanBadgeText, { color: colors.foreground, fontFamily: "Inter_500Medium" }]}>
+              <View style={[styles.scanBadge, { backgroundColor: colors.cardBackground }]}>
+                <Feather name="zap" size={14} color={colors.streakLightning} />
+                <Text style={[styles.scanBadgeText, { color: colors.bodyText, fontFamily: "Inter_500Medium" }]}>
                   {weekScans} AI scan{weekScans !== 1 ? "s" : ""} this week
                 </Text>
                 <Text style={[styles.scanCost, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
@@ -290,12 +291,12 @@ export default function WeeklySummaryScreen() {
               {/* Top meals */}
               {topMeals.length > 0 && (
                 <View style={styles.topMeals}>
-                  <Text style={[styles.topMealsTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+                  <Text style={[styles.topMealsTitle, { color: colors.primaryText, fontFamily: "Inter_700Bold" }]}>
                     Top meals this week
                   </Text>
                   {topMeals.map((meal, i) => (
                     <View key={meal.id} style={[styles.mealRow, { borderColor: colors.border }]}>
-                      <View style={[styles.rankBadge, { backgroundColor: i === 0 ? "#FFD700" : i === 1 ? "#E0E0E0" : "#CD7F32" }]}>
+                      <View style={[styles.rankBadge, { backgroundColor: i === 0 ? colors.streakLightning : i === 1 ? colors.buttonGreen : colors.ctaDarkGreen }]}>
                         <Text style={[styles.rankText, { fontFamily: "Inter_700Bold" }]}>{i + 1}</Text>
                       </View>
                       {meal.imageUri ? (
@@ -313,7 +314,7 @@ export default function WeeklySummaryScreen() {
                           {meal.mealType} · {todayLabel(meal.date)}
                         </Text>
                       </View>
-                      <Text style={[styles.mealCal, { color: "#FF6B35", fontFamily: "Inter_700Bold" }]}>
+                      <Text style={[styles.mealCal, { color: colors.fatRed, fontFamily: "Inter_700Bold" }]}>
                         {Math.round(meal.totals.calories)}
                       </Text>
                     </View>
@@ -336,7 +337,7 @@ export default function WeeklySummaryScreen() {
         {weekLogs.length === 0 && (
           <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Feather name="calendar" size={32} color={colors.mutedForeground} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}>
+            <Text style={[styles.emptyTitle, { color: colors.primaryText, fontFamily: "Inter_600SemiBold" }]}>
               No meals logged this week
             </Text>
             <Text style={[styles.emptyDesc, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
@@ -356,13 +357,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 16,
   },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 18, color: "#FFFFFF" },
+  headerTitle: { fontSize: 18, color: palette.light.whiteTextOnGreen },
   shareBtn: {
     flexDirection: "row", alignItems: "center", gap: 6,
     minHeight: 44, paddingHorizontal: 14, paddingVertical: 8,
-    backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 12,
+    backgroundColor: palette.light.whiteOverlay15, borderRadius: 12,
   },
-  shareBtnText: { color: "#FFFFFF", fontSize: 14 },
+  shareBtnText: { color: palette.light.whiteTextOnGreen, fontSize: 14 },
   scroll: { padding: 16, gap: 16 },
   desktopScroll: { width: "100%", maxWidth: 760, alignSelf: "center" },
   cardOuter: { borderRadius: 20, overflow: "hidden" },
@@ -372,8 +373,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, paddingVertical: 16,
   },
   cardBrand: { flexDirection: "row", alignItems: "center", gap: 8 },
-  brandName: { fontSize: 22, color: "#FFFFFF" },
-  weekLabel: { fontSize: 13, color: "rgba(255,255,255,0.75)" },
+  brandName: { fontSize: 22, color: palette.light.whiteTextOnGreen },
+  weekLabel: { fontSize: 13, color: palette.light.whiteOverlay80 },
   cardBody: { padding: 20, gap: 20 },
   calRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   calMain: { flex: 1, alignItems: "center" },
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
   rankBadge: {
     width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center",
   },
-  rankText: { fontSize: 11, color: "#FFFFFF" },
+  rankText: { fontSize: 11, color: palette.light.whiteTextOnGreen },
   mealThumb: { width: 44, height: 44, borderRadius: 10 },
   mealThumbFallback: {
     width: 44, height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center",

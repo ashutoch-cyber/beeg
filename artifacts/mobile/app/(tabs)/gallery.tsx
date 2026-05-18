@@ -13,15 +13,16 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import palette from "@/constants/colors";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth, isTabletWidth } from "@/lib/responsive";
 
 const MEAL_COLORS: Record<string, string> = {
-  Breakfast: "#FF9500",
-  Lunch: "#2196F3",
-  Dinner: "#9C27B0",
-  Snack: "#4CAF50",
+  Breakfast: palette.light.streakLightning,
+  Lunch: palette.light.macroProteinColor,
+  Dinner: palette.light.buttonGreen,
+  Snack: palette.light.highlightGreen,
 };
 
 export default function GalleryScreen() {
@@ -71,15 +72,15 @@ export default function GalleryScreen() {
         ]}
       >
         <Text
-          style={[styles.title, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}
+          style={[styles.title, { color: colors.primaryText, fontFamily: "Inter_700Bold" }]}
         >
           Snap Gallery
         </Text>
         <TouchableOpacity
-          style={[styles.snapBtn, { backgroundColor: colors.primary }]}
+          style={[styles.snapBtn, { backgroundColor: colors.ctaDarkGreen }]}
           onPress={() => router.push("/snap")}
         >
-          <Feather name="camera" size={16} color={colors.primaryForeground} />
+          <Feather name="camera" size={16} color={colors.whiteTextOnGreen} />
         </TouchableOpacity>
       </View>
 
@@ -88,14 +89,14 @@ export default function GalleryScreen() {
         <View
           style={[
             styles.searchBox,
-            { backgroundColor: colors.muted, borderColor: colors.border },
+            { backgroundColor: colors.cardBackground, borderColor: colors.border },
           ]}
         >
           <Feather name="search" size={16} color={colors.mutedForeground} />
           <TextInput
             style={[
               styles.searchInput,
-              { color: colors.foreground, fontFamily: "Inter_400Regular" },
+              { color: colors.bodyText, fontFamily: "Inter_400Regular" },
             ]}
             placeholder="Search meals, dates…"
             placeholderTextColor={colors.mutedForeground}
@@ -133,7 +134,8 @@ export default function GalleryScreen() {
               styles.filterPill,
               {
                 backgroundColor:
-                  filter === f ? colors.vibrantGreen : colors.muted,
+                  filter === f ? colors.ctaDarkGreen : colors.cardBackground,
+                borderColor: colors.border,
               },
             ]}
           >
@@ -141,7 +143,7 @@ export default function GalleryScreen() {
               style={[
                 styles.filterText,
                 {
-                  color: filter === f ? colors.accentForeground : colors.mutedForeground,
+                  color: filter === f ? colors.whiteTextOnGreen : colors.bodyText,
                   fontFamily: filter === f ? "Inter_600SemiBold" : "Inter_400Regular",
                 },
               ]}
@@ -188,7 +190,7 @@ export default function GalleryScreen() {
                 <Text
                   style={[
                     styles.emptyTitle,
-                    { color: colors.foreground, fontFamily: "Inter_600SemiBold" },
+                    { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
                   ]}
                 >
                   No matches for "{query}"
@@ -205,7 +207,7 @@ export default function GalleryScreen() {
                   style={[styles.clearBtn, { borderColor: colors.border }]}
                   onPress={() => { setQuery(""); setFilter("All"); }}
                 >
-                  <Text style={[styles.clearBtnText, { color: colors.vibrantGreen, fontFamily: "Inter_600SemiBold" }]}>
+                  <Text style={[styles.clearBtnText, { color: colors.ctaDarkGreen, fontFamily: "Inter_600SemiBold" }]}>
                     Clear search
                   </Text>
                 </TouchableOpacity>
@@ -216,7 +218,7 @@ export default function GalleryScreen() {
                 <Text
                   style={[
                     styles.emptyTitle,
-                    { color: colors.foreground, fontFamily: "Inter_600SemiBold" },
+                    { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
                   ]}
                 >
                   No snaps yet
@@ -258,10 +260,10 @@ export default function GalleryScreen() {
                   <View
                     style={[
                       styles.autoTrackedBadge,
-                      { backgroundColor: "rgba(11, 47, 31, 0.9)" },
+                      { backgroundColor: colors.ctaDarkGreenOverlay90 },
                     ]}
                   >
-                    <Feather name="check-circle" size={10} color="#FFFFFF" />
+                    <Feather name="check-circle" size={10} color={colors.whiteTextOnGreen} />
                     <Text style={[styles.autoTrackedText, { fontFamily: "Inter_600SemiBold" }]}>
                       Auto-Tracked
                     </Text>
@@ -272,7 +274,7 @@ export default function GalleryScreen() {
                     <Text
                       style={[
                         styles.gridDish,
-                        { color: colors.foreground, fontFamily: "Inter_600SemiBold" },
+                        { color: colors.bodyText, fontFamily: "Inter_600SemiBold" },
                       ]}
                       numberOfLines={1}
                     >
@@ -281,13 +283,13 @@ export default function GalleryScreen() {
                     <View
                       style={[
                         styles.mealBadge,
-                        { backgroundColor: (MEAL_COLORS[log.mealType] ?? "#4CAF50") + "20" },
+                        { backgroundColor: colors.lightAccentGreen },
                       ]}
                     >
                       <Text
                         style={[
                           styles.mealBadgeText,
-                          { color: MEAL_COLORS[log.mealType] ?? "#4CAF50", fontFamily: "Inter_500Medium" },
+                          { color: MEAL_COLORS[log.mealType] ?? colors.highlightGreen, fontFamily: "Inter_500Medium" },
                         ]}
                       >
                         {log.mealType}
@@ -329,7 +331,7 @@ function highlightMatch(text: string, query: string, colors: ReturnType<typeof u
   return (
     <>
       {text.slice(0, idx)}
-      <Text style={{ color: colors.vibrantGreen, fontFamily: "Inter_700Bold" }}>
+      <Text style={{ color: colors.highlightGreen, fontFamily: "Inter_700Bold" }}>
         {text.slice(idx, idx + query.length)}
       </Text>
       {text.slice(idx + query.length)}
@@ -434,7 +436,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 0,
-    shadowColor: "#000",
+    shadowColor: palette.light.primaryText,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -454,7 +456,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  autoTrackedText: { color: "#FFFFFF", fontSize: 10 },
+  autoTrackedText: { color: palette.light.whiteTextOnGreen, fontSize: 10 },
   gridInfo: { padding: 14, gap: 8 },
   gridInfoTop: {
     flexDirection: "row",

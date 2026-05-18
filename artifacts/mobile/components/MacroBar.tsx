@@ -18,26 +18,26 @@ export function MacroBar({ label, current, goal, unit = "g", color }: MacroBarPr
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.label, { color: colors.foreground, fontFamily: "Inter_500Medium" }]}>
+        <Text style={[styles.label, { color: colors.bodyText, fontFamily: "Inter_500Medium" }]}>
           {label}
         </Text>
-        <Text style={[styles.values, { color: isOver ? color : colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.values, { color: isOver ? colors.highlightGreen : colors.mutedText, fontFamily: "Inter_400Regular" }]}>
           {Math.round(current)}{unit}{" / "}
-          <Text style={{ color: colors.mutedForeground }}>{goal}{unit}</Text>
+          <Text style={{ color: colors.mutedText }}>{goal}{unit}</Text>
           {isOver && (
-            <Text style={[{ color }, { fontFamily: "Inter_600SemiBold" }]}>
+            <Text style={[{ color: colors.highlightGreen }, { fontFamily: "Inter_600SemiBold" }]}>
               {" "}({Math.round((current / goal) * 100)}%)
             </Text>
           )}
         </Text>
       </View>
-      <View style={[styles.track, { backgroundColor: colors.muted }]}>
+      <View style={[styles.track, { backgroundColor: colors.lightAccentGreen }]}>
         <View
           style={[
             styles.fill,
             {
               width: `${percentage}%` as `${number}%`,
-              backgroundColor: color,
+              backgroundColor: colors.highlightGreen,
               borderRadius: 4,
             },
           ]}

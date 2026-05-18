@@ -1,4 +1,6 @@
-export const PROFILE_GREEN = "#0B2F1F";
+import palette from "@/constants/colors";
+
+export const PROFILE_GREEN = palette.light.primaryGreen;
 
 type LocalStorageLike = {
   getItem: (key: string) => string | null;

@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import { Alert, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import palette from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 import type { FoodLog } from "@/context/NutritionContext";
 
@@ -11,10 +12,10 @@ interface MealLogCardProps {
 }
 
 const MEAL_COLORS: Record<string, string> = {
-  Breakfast: "#FF9500",
-  Lunch: "#2196F3",
-  Dinner: "#9C27B0",
-  Snack: "#4CAF50",
+  Breakfast: palette.light.streakLightning,
+  Lunch: palette.light.macroProteinColor,
+  Dinner: palette.light.buttonGreen,
+  Snack: palette.light.highlightGreen,
 };
 
 export function MealLogCard({ log, onDelete }: MealLogCardProps) {
@@ -43,7 +44,7 @@ export function MealLogCard({ log, onDelete }: MealLogCardProps) {
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.header}>
-        <View style={[styles.mealBadge, { backgroundColor: mealColor + "20" }]}>
+        <View style={[styles.mealBadge, { backgroundColor: colors.lightAccentGreen }]}>
           <Text style={[styles.mealType, { color: mealColor, fontFamily: "Inter_600SemiBold" }]}>
             {log.mealType}
           </Text>
@@ -86,9 +87,9 @@ export function MealLogCard({ log, onDelete }: MealLogCardProps) {
 
       <View style={[styles.macroRow, { borderTopColor: colors.border }]}>
         {[
-          { label: "P", value: log.totals.protein, color: "#2196F3" },
-          { label: "C", value: log.totals.carbs, color: "#FFC107" },
-          { label: "F", value: log.totals.fat, color: "#F44336" },
+          { label: "P", value: log.totals.protein, color: colors.proteinBlue },
+          { label: "C", value: log.totals.carbs, color: colors.carbsYellow },
+          { label: "F", value: log.totals.fat, color: colors.fatRed },
         ].map((m) => (
           <View key={m.label} style={styles.macroItem}>
             <View style={[styles.macroDot, { backgroundColor: m.color }]} />

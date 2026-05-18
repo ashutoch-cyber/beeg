@@ -14,15 +14,16 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import palette from "@/constants/colors";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
 const MEAL_COLORS: Record<string, string> = {
-  Breakfast: "#FF9500",
-  Lunch: "#2196F3",
-  Dinner: "#9C27B0",
-  Snack: "#4CAF50",
+  Breakfast: palette.light.streakLightning,
+  Lunch: palette.light.macroProteinColor,
+  Dinner: palette.light.buttonGreen,
+  Snack: palette.light.highlightGreen,
 };
 
 export default function MealDetailScreen() {
@@ -44,7 +45,7 @@ export default function MealDetailScreen() {
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { paddingTop: topPadding + 12, backgroundColor: colors.darkGreen }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-            <Feather name="x" size={22} color="#fff" />
+            <Feather name="x" size={22} color={colors.whiteTextOnGreen} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]}>Meal Detail</Text>
           <View style={{ width: 40 }} />
@@ -88,10 +89,10 @@ export default function MealDetailScreen() {
   const mealColor = MEAL_COLORS[log.mealType] ?? colors.vibrantGreen;
 
   const macros = [
-    { label: "Calories", value: log.totals.calories, unit: "kcal", color: "#FF6B35" },
-    { label: "Protein",  value: log.totals.protein,  unit: "g",    color: "#2196F3" },
-    { label: "Carbs",    value: log.totals.carbs,     unit: "g",    color: "#FFC107" },
-    { label: "Fat",      value: log.totals.fat,       unit: "g",    color: "#F44336" },
+    { label: "Calories", value: log.totals.calories, unit: "kcal", color: colors.fatRed },
+    { label: "Protein",  value: log.totals.protein,  unit: "g",    color: colors.proteinBlue },
+    { label: "Carbs",    value: log.totals.carbs,     unit: "g",    color: colors.carbsYellow },
+    { label: "Fat",      value: log.totals.fat,       unit: "g",    color: colors.fatRed },
   ];
 
   return (
@@ -99,7 +100,7 @@ export default function MealDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPadding + 12, backgroundColor: colors.darkGreen }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-          <Feather name="arrow-left" size={22} color="#fff" />
+          <Feather name="arrow-left" size={22} color={colors.whiteTextOnGreen} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
           {log.dishName}
@@ -109,7 +110,7 @@ export default function MealDetailScreen() {
           style={styles.headerBtn}
           disabled={deleting}
         >
-          <Feather name="trash-2" size={20} color={deleting ? "rgba(255,255,255,0.4)" : "#FF6B6B"} />
+          <Feather name="trash-2" size={20} color={deleting ? colors.whiteOverlay40 : colors.fatRed} />
         </TouchableOpacity>
       </View>
 
@@ -132,8 +133,8 @@ export default function MealDetailScreen() {
             />
             {/* Overlay badges */}
             <View style={styles.imageBadges}>
-              <View style={[styles.autoBadge, { backgroundColor: "rgba(11,47,31,0.88)" }]}>
-                <Feather name="check-circle" size={11} color="#fff" />
+              <View style={[styles.autoBadge, { backgroundColor: colors.ctaDarkGreenOverlay88 }]}>
+                <Feather name="check-circle" size={11} color={colors.whiteTextOnGreen} />
                 <Text style={[styles.autoBadgeText, { fontFamily: "Inter_600SemiBold" }]}>
                   Auto-Tracked
                 </Text>
@@ -149,11 +150,11 @@ export default function MealDetailScreen() {
         {/* Title row */}
         <View style={styles.titleRow}>
           <View style={{ flex: 1, gap: 6 }}>
-            <Text style={[styles.dishName, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+            <Text style={[styles.dishName, { color: colors.primaryText, fontFamily: "Inter_700Bold" }]}>
               {log.dishName}
             </Text>
             <View style={styles.metaRow}>
-              <View style={[styles.mealBadge, { backgroundColor: mealColor + "20" }]}>
+              <View style={[styles.mealBadge, { backgroundColor: colors.lightAccentGreen }]}>
                 <Text style={[styles.mealBadgeText, { color: mealColor, fontFamily: "Inter_600SemiBold" }]}>
                   {log.mealType}
                 </Text>
@@ -206,7 +207,7 @@ export default function MealDetailScreen() {
               <Text style={[styles.macroUnit, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
                 {m.unit}
               </Text>
-              <Text style={[styles.macroLabel, { color: colors.foreground, fontFamily: "Inter_500Medium" }]}>
+              <Text style={[styles.macroLabel, { color: colors.bodyText, fontFamily: "Inter_500Medium" }]}>
                 {m.label}
               </Text>
             </View>
@@ -216,7 +217,7 @@ export default function MealDetailScreen() {
         {/* Ingredient breakdown */}
         <View style={[styles.ingredientCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
-            <Text style={[styles.cardTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
+            <Text style={[styles.cardTitle, { color: colors.primaryText, fontFamily: "Inter_700Bold" }]}>
               Ingredient breakdown
             </Text>
             <Text style={[styles.cardCount, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
@@ -248,20 +249,20 @@ export default function MealDetailScreen() {
               {i > 0 && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
               <View style={styles.ingRow}>
                 <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[styles.ingName, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                  <Text style={[styles.ingName, { color: colors.bodyText, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
                     {ing.name}
                   </Text>
                   <Text style={[styles.ingServing, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
                     {ing.serving}
                   </Text>
                 </View>
-                <Text style={[styles.ingMacro, { color: "#2196F3", fontFamily: "Inter_500Medium", width: 56 }]}>
+                <Text style={[styles.ingMacro, { color: colors.proteinBlue, fontFamily: "Inter_500Medium", width: 56 }]}>
                   {Math.round(ing.protein ?? 0)}g
                 </Text>
-                <Text style={[styles.ingMacro, { color: "#FFC107", fontFamily: "Inter_500Medium", width: 56 }]}>
+                <Text style={[styles.ingMacro, { color: colors.carbsYellow, fontFamily: "Inter_500Medium", width: 56 }]}>
                   {Math.round(ing.carbs ?? 0)}g
                 </Text>
-                <Text style={[styles.ingMacro, { color: "#F44336", fontFamily: "Inter_500Medium", width: 56 }]}>
+                <Text style={[styles.ingMacro, { color: colors.fatRed, fontFamily: "Inter_500Medium", width: 56 }]}>
                   {Math.round(ing.fat ?? 0)}g
                 </Text>
                 <Text style={[styles.ingCal, { color: colors.calorieOrange, fontFamily: "Inter_600SemiBold", width: 64 }]}>
@@ -272,20 +273,20 @@ export default function MealDetailScreen() {
           ))}
 
           {/* Totals row */}
-          <View style={[styles.totalRow, { borderTopColor: colors.darkGreen }]}>
-            <Text style={[styles.totalLabel, { color: colors.darkGreen, fontFamily: "Inter_700Bold", flex: 1 }]}>
+          <View style={[styles.totalRow, { borderTopColor: colors.primaryGreen }]}>
+            <Text style={[styles.totalLabel, { color: colors.primaryText, fontFamily: "Inter_700Bold", flex: 1 }]}>
               Total
             </Text>
-            <Text style={[styles.totalMacro, { color: "#2196F3", fontFamily: "Inter_700Bold", width: 56 }]}>
+            <Text style={[styles.totalMacro, { color: colors.proteinBlue, fontFamily: "Inter_700Bold", width: 56 }]}>
               {Math.round(log.totals.protein)}g
             </Text>
-            <Text style={[styles.totalMacro, { color: "#FFC107", fontFamily: "Inter_700Bold", width: 56 }]}>
+            <Text style={[styles.totalMacro, { color: colors.carbsYellow, fontFamily: "Inter_700Bold", width: 56 }]}>
               {Math.round(log.totals.carbs)}g
             </Text>
-            <Text style={[styles.totalMacro, { color: "#F44336", fontFamily: "Inter_700Bold", width: 56 }]}>
+            <Text style={[styles.totalMacro, { color: colors.fatRed, fontFamily: "Inter_700Bold", width: 56 }]}>
               {Math.round(log.totals.fat)}g
             </Text>
-            <Text style={[styles.totalCal, { color: colors.darkGreen, fontFamily: "Inter_700Bold", width: 64 }]}>
+            <Text style={[styles.totalCal, { color: colors.primaryText, fontFamily: "Inter_700Bold", width: 64 }]}>
               {Math.round(log.totals.calories)}
             </Text>
           </View>
@@ -293,12 +294,12 @@ export default function MealDetailScreen() {
 
         {/* Delete button */}
         <TouchableOpacity
-          style={[styles.deleteBtn, { borderColor: "#FF6B6B" }]}
+          style={[styles.deleteBtn, { borderColor: colors.fatRed }]}
           onPress={handleDelete}
           disabled={deleting}
           activeOpacity={0.75}
         >
-          <Feather name="trash-2" size={16} color="#FF6B6B" />
+          <Feather name="trash-2" size={16} color={colors.fatRed} />
           <Text style={[styles.deleteBtnText, { fontFamily: "Inter_600SemiBold" }]}>
             {deleting ? "Removing…" : "Remove from log"}
           </Text>
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   headerBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { flex: 1, fontSize: 17, color: "#fff", textAlign: "center" },
+  headerTitle: { flex: 1, fontSize: 17, color: palette.light.whiteTextOnGreen, textAlign: "center" },
   notFound: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
   notFoundText: { fontSize: 15 },
   scroll: { flex: 1 },
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 5,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
   },
-  autoBadgeText: { color: "#fff", fontSize: 11 },
+  autoBadgeText: { color: palette.light.whiteTextOnGreen, fontSize: 11 },
   imagePlaceholder: {
     width: "100%", height: 180, borderRadius: 20,
     alignItems: "center", justifyContent: "center",
@@ -394,5 +395,5 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5,
   },
-  deleteBtnText: { color: "#FF6B6B", fontSize: 14 },
+  deleteBtnText: { color: palette.light.macroFatColor, fontSize: 14 },
 });

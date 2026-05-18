@@ -11,14 +11,14 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0B2F1F"
+      "backgroundColor": "#4A7C59"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bee.app"
     },
     "android": {
-      "backgroundColor": "#0B2F1F",
+      "backgroundColor": "#4A7C59",
       "package": "com.bee.app"
     },
     "web": {
@@ -28,8 +28,8 @@
       "name": "Bee",
       "shortName": "Bee",
       "description": "AI-powered food tracking. Snap a photo, get instant nutrition breakdown.",
-      "themeColor": "#0B2F1F",
-      "backgroundColor": "#0B2F1F"
+      "themeColor": "#4A7C59",
+      "backgroundColor": "#F5EFE6"
     },
     "plugins": [
       [

@@ -59,7 +59,7 @@ export default function DashboardScreen() {
           <Text
             style={[
               styles.title,
-              { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
             ]}
           >
             Today's Nutrition
@@ -70,7 +70,7 @@ export default function DashboardScreen() {
             style={[styles.goalBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             onPress={() => router.push("/goals")}
           >
-            <Feather name="target" size={20} color={colors.vibrantGreen} />
+            <Feather name="target" size={20} color={colors.buttonGreen} />
           </TouchableOpacity>
         </View>
       </View>
@@ -79,7 +79,7 @@ export default function DashboardScreen() {
       <View
         style={[
           styles.ringCard,
-          { backgroundColor: colors.darkGreen, shadowColor: colors.darkGreen },
+          { backgroundColor: colors.primaryGreen, shadowColor: colors.primaryGreen },
         ]}
       >
         <CalorieRing
@@ -92,7 +92,7 @@ export default function DashboardScreen() {
             <Text
               style={[
                 styles.statValue,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold", fontSize: statValueSize },
+                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold", fontSize: statValueSize },
               ]}
             >
               {Math.round(todayTotals.calories)}
@@ -100,20 +100,20 @@ export default function DashboardScreen() {
             <Text
               style={[
                 styles.statLabel,
-                { color: "rgba(255,255,255,0.7)", fontFamily: "Inter_400Regular" },
+                { color: colors.whiteOverlay70, fontFamily: "Inter_400Regular" },
               ]}
             >
               Consumed
             </Text>
           </View>
           <View
-            style={[styles.statDivider, { backgroundColor: "rgba(255,255,255,0.2)" }]}
+            style={[styles.statDivider, { backgroundColor: colors.whiteOverlay20 }]}
           />
           <View style={styles.statItem}>
             <Text
               style={[
                 styles.statValue,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold", fontSize: statValueSize },
+                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold", fontSize: statValueSize },
               ]}
             >
               {Math.max(goals.calories - Math.round(todayTotals.calories), 0)}
@@ -121,20 +121,20 @@ export default function DashboardScreen() {
             <Text
               style={[
                 styles.statLabel,
-                { color: "rgba(255,255,255,0.7)", fontFamily: "Inter_400Regular" },
+                { color: colors.whiteOverlay70, fontFamily: "Inter_400Regular" },
               ]}
             >
               Remaining
             </Text>
           </View>
           <View
-            style={[styles.statDivider, { backgroundColor: "rgba(255,255,255,0.2)" }]}
+            style={[styles.statDivider, { backgroundColor: colors.whiteOverlay20 }]}
           />
           <View style={styles.statItem}>
             <Text
               style={[
                 styles.statValue,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold", fontSize: statValueSize },
+                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold", fontSize: statValueSize },
               ]}
             >
               {goals.calories}
@@ -142,7 +142,7 @@ export default function DashboardScreen() {
             <Text
               style={[
                 styles.statLabel,
-                { color: "rgba(255,255,255,0.7)", fontFamily: "Inter_400Regular" },
+                { color: colors.whiteOverlay70, fontFamily: "Inter_400Regular" },
               ]}
             >
               Goal
@@ -161,7 +161,7 @@ export default function DashboardScreen() {
         <Text
           style={[
             styles.sectionTitle,
-            { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+            { color: colors.primaryGreen, fontFamily: "Inter_700Bold" },
           ]}
         >
           Macros
@@ -206,7 +206,7 @@ export default function DashboardScreen() {
 
       {/* Snap Food FAB */}
       <TouchableOpacity
-        style={[styles.snapBtn, { backgroundColor: colors.primary }]}
+        style={[styles.snapBtn, { backgroundColor: colors.ctaDarkGreen }]}
         onPress={() => router.push("/snap")}
         activeOpacity={0.85}
       >
@@ -227,7 +227,7 @@ export default function DashboardScreen() {
           <Text
             style={[
               styles.mealsTitle,
-              { color: colors.darkGreen, fontFamily: "Inter_700Bold" },
+              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
             ]}
           >
             Today's Meals
@@ -249,7 +249,7 @@ export default function DashboardScreen() {
           <Text
             style={[
               styles.emptyTitle,
-              { color: colors.foreground, fontFamily: "Inter_600SemiBold" },
+              { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
             ]}
           >
             No meals logged yet

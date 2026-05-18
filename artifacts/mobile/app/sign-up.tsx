@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import palette from "@/constants/colors";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -59,7 +60,7 @@ export default function SignUpScreen() {
         <View style={[styles.logoWrap, { backgroundColor: colors.darkGreen }]}>
           <Text style={styles.logoEmoji}>🐝</Text>
         </View>
-        <Feather name="check-circle" size={56} color={colors.vibrantGreen} style={{ marginBottom: 16 }} />
+        <Feather name="check-circle" size={56} color={colors.highlightGreen} style={{ marginBottom: 16 }} />
         <Text style={[styles.successTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
           Account created!
         </Text>
@@ -103,8 +104,8 @@ export default function SignUpScreen() {
           </Text>
 
           {error && (
-            <View style={[styles.errorBox, { backgroundColor: "#FEE2E2", borderColor: "#FECACA" }]}>
-              <Feather name="alert-circle" size={14} color="#DC2626" />
+            <View style={[styles.errorBox, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+              <Feather name="alert-circle" size={14} color={colors.fatRed} />
               <Text style={[styles.errorText, { fontFamily: "Inter_400Regular" }]}>{error}</Text>
             </View>
           )}
@@ -163,7 +164,7 @@ export default function SignUpScreen() {
             activeOpacity={0.85}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={colors.whiteTextOnGreen} />
             ) : (
               <Text style={[styles.btnText, { fontFamily: "Inter_600SemiBold" }]}>Create Account</Text>
             )}
@@ -175,7 +176,7 @@ export default function SignUpScreen() {
             Already have an account?{" "}
           </Text>
           <TouchableOpacity onPress={() => router.replace("/sign-in")}>
-            <Text style={[styles.footerLink, { color: colors.vibrantGreen, fontFamily: "Inter_600SemiBold" }]}>
+            <Text style={[styles.footerLink, { color: colors.ctaDarkGreen, fontFamily: "Inter_600SemiBold" }]}>
               Sign in
             </Text>
           </TouchableOpacity>
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  errorText: { fontSize: 13, color: "#DC2626", flex: 1 },
+  errorText: { fontSize: 13, color: palette.light.macroFatColor, flex: 1 },
   fields: { gap: 16 },
   label: { fontSize: 14, marginBottom: 6 },
   input: {
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: "center",
   },
-  btnText: { color: "#FFFFFF", fontSize: 16 },
+  btnText: { color: palette.light.whiteTextOnGreen, fontSize: 16 },
   footer: { flexDirection: "row", marginTop: 24, alignItems: "center" },
   footerText: { fontSize: 14 },
   footerLink: { fontSize: 14 },

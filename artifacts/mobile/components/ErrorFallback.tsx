@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import palette from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 
 export type ErrorFallbackProps = {
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 24,
     minWidth: 200,
-    shadowColor: "#000",
+    shadowColor: palette.light.primaryText,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: palette.light.primaryTextOverlay50,
     justifyContent: "flex-end",
   },
   modalContainer: {

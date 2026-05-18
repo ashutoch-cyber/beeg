@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import palette from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 import { isDesktopWidth } from "@/lib/responsive";
 
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   disabledBtn: { opacity: 0.45 },
-  primaryBtnText: { color: "#FFFFFF", fontSize: 17 },
+  primaryBtnText: { color: palette.light.whiteTextOnGreen, fontSize: 17 },
   infoBanner: {
     borderRadius: 14,
     padding: 14,
@@ -615,7 +616,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     marginLeft: -12,
-    shadowColor: "#000000",
+    shadowColor: palette.light.primaryText,
     shadowOpacity: 0.18,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },

@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import palette from "@/constants/colors";
 import { BasicInfoScreen } from "@/components/profile/BasicInfoScreen";
 import { CalorieInfoScreen } from "@/components/profile/CalorieInfoScreen";
 import { PrimaryGoalScreen } from "@/components/profile/PrimaryGoalScreen";
@@ -232,7 +233,7 @@ export default function ProfileScreen() {
               </View>
             )}
             <View style={styles.cameraBadge}>
-              <Feather name="camera" size={15} color="#FFFFFF" />
+              <Feather name="camera" size={15} color={colors.whiteTextOnGreen} />
             </View>
           </TouchableOpacity>
           <Text style={[styles.headerName, { fontFamily: "Inter_700Bold" }]}>
@@ -295,7 +296,7 @@ export default function ProfileScreen() {
               {location || "No location saved"}
             </Text>
             <TouchableOpacity style={styles.detectBtn} onPress={detectLocation} activeOpacity={0.9}>
-              <Feather name="map-pin" size={17} color="#FFFFFF" />
+              <Feather name="map-pin" size={17} color={colors.whiteTextOnGreen} />
               <Text style={[styles.detectText, { fontFamily: "Inter_700Bold" }]}>
                 {detectingLocation ? "Detecting..." : "Detect My Location"}
               </Text>
@@ -335,7 +336,7 @@ export default function ProfileScreen() {
 
       {toast ? (
         <View style={styles.toast}>
-          <Feather name="check" size={16} color="#FFFFFF" />
+          <Feather name="check" size={16} color={colors.whiteTextOnGreen} />
           <Text style={[styles.toastText, { fontFamily: "Inter_600SemiBold" }]}>{toast}</Text>
         </View>
       ) : null}
@@ -426,11 +427,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#081F15",
+    backgroundColor: palette.light.ctaDarkGreen,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarInitials: { color: "#FFFFFF", fontSize: 28 },
+  avatarInitials: { color: palette.light.whiteTextOnGreen, fontSize: 28 },
   cameraBadge: {
     position: "absolute",
     right: 4,
@@ -438,14 +439,14 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#081F15",
+    backgroundColor: palette.light.ctaDarkGreen,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#FFFFFF",
+    borderColor: palette.light.whiteTextOnGreen,
   },
-  headerName: { color: "#FFFFFF", fontSize: 22, marginTop: 6 },
-  headerMeta: { color: "rgba(255,255,255,0.82)", fontSize: 13, marginTop: 4 },
+  headerName: { color: palette.light.whiteTextOnGreen, fontSize: 22, marginTop: 6 },
+  headerMeta: { color: palette.light.whiteOverlay82, fontSize: 13, marginTop: 4 },
   body: { padding: 16, gap: 20 },
   desktopBody: { width: "100%", maxWidth: 760, alignSelf: "center" },
   section: { gap: 10 },
@@ -470,7 +471,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  inlineSaveText: { color: "#FFFFFF", fontSize: 14 },
+  inlineSaveText: { color: palette.light.whiteTextOnGreen, fontSize: 14 },
   bioInput: {
     minHeight: 112,
     borderRadius: 14,
@@ -500,8 +501,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  detectText: { color: "#FFFFFF", fontSize: 15 },
-  errorText: { color: "#D32F2F", fontSize: 13 },
+  detectText: { color: palette.light.whiteTextOnGreen, fontSize: 15 },
+  errorText: { color: palette.light.macroFatColor, fontSize: 13 },
   detectedText: { fontSize: 13 },
   rowsWrap: { gap: 12 },
   profileRow: {
@@ -530,5 +531,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  toastText: { color: "#FFFFFF", fontSize: 14 },
+  toastText: { color: palette.light.whiteTextOnGreen, fontSize: 14 },
 });

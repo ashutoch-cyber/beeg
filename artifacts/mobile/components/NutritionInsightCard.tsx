@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import palette from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 
 interface Totals {
@@ -35,12 +36,12 @@ interface Props {
 }
 
 const CATEGORY_META: Record<string, { icon: string; color: string }> = {
-  protein:  { icon: "zap",        color: "#2196F3" },
-  carbs:    { icon: "battery",    color: "#FFC107" },
-  fat:      { icon: "droplet",    color: "#F44336" },
-  calories: { icon: "activity",   color: "#FF6B35" },
-  fibre:    { icon: "feather",    color: "#4CAF50" },
-  general:  { icon: "star",       color: "#9C27B0" },
+  protein:  { icon: "zap",        color: palette.light.macroProteinColor },
+  carbs:    { icon: "battery",    color: palette.light.macroCarbsColor },
+  fat:      { icon: "droplet",    color: palette.light.macroFatColor },
+  calories: { icon: "activity",   color: palette.light.macroFatColor },
+  fibre:    { icon: "feather",    color: palette.light.highlightGreen },
+  general:  { icon: "star",       color: palette.light.primaryGreen },
 };
 
 function getTodayKey() {
@@ -111,8 +112,8 @@ export function NutritionInsightCard({ totals, goals, hasLogs }: Props) {
     return (
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.headerRow}>
-          <View style={[styles.iconWrap, { backgroundColor: "#F3E5F5" }]}>
-            <Feather name="cpu" size={16} color="#9C27B0" />
+          <View style={[styles.iconWrap, { backgroundColor: colors.lightAccentGreen }]}>
+            <Feather name="cpu" size={16} color={colors.primaryGreen} />
           </View>
           <Text style={[styles.cardTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
             AI Nutrition Tip
@@ -128,7 +129,7 @@ export function NutritionInsightCard({ totals, goals, hasLogs }: Props) {
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.headerRow}>
-        <View style={[styles.iconWrap, { backgroundColor: meta.color + "18" }]}>
+        <View style={[styles.iconWrap, { backgroundColor: colors.lightAccentGreen }]}>
           <Feather name={meta.icon as any} size={16} color={meta.color} />
         </View>
         <Text style={[styles.cardTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
@@ -164,8 +165,8 @@ export function NutritionInsightCard({ totals, goals, hasLogs }: Props) {
       )}
 
       {tip && !loading && (
-        <View style={[styles.tipBubble, { backgroundColor: meta.color + "12", borderColor: meta.color + "30" }]}>
-          <Text style={[styles.tipText, { color: colors.foreground, fontFamily: "Inter_400Regular" }]}>
+        <View style={[styles.tipBubble, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+          <Text style={[styles.tipText, { color: colors.bodyText, fontFamily: "Inter_400Regular" }]}>
             {tip}
           </Text>
         </View>

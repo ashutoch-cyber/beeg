@@ -11,6 +11,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import palette from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 
 interface Props {
@@ -75,9 +76,9 @@ function WeekDot({
           styles.dot,
           dotStyle,
           {
-            backgroundColor: logged ? "#4ADE80" : "rgba(255,255,255,0.18)",
+            backgroundColor: logged ? palette.light.highlightGreen : palette.light.whiteOverlay18,
             borderWidth: logged ? 0 : 1,
-            borderColor: "rgba(255,255,255,0.25)",
+            borderColor: palette.light.whiteOverlay25,
           },
         ]}
       />
@@ -85,7 +86,7 @@ function WeekDot({
         style={[
           styles.dotLabel,
           {
-            color: logged ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)",
+            color: logged ? palette.light.whiteOverlay90 : palette.light.whiteOverlay35,
             fontFamily: logged ? "Inter_700Bold" : "Inter_400Regular",
           },
         ]}
@@ -198,8 +199,7 @@ export function StreakCard({ streak, bestStreak, weekLoggedDays }: Props) {
     transform: [{ scale: numScale.value }],
   }));
 
-  const flameColor =
-    streak === 0 ? "#9E9E9E" : streak < 3 ? "#FFA726" : "#FF5722";
+  const flameColor = streak === 0 ? colors.mutedText : colors.streakLightning;
   const milestoneLabel = getMilestoneLabel(streak);
 
   return (
@@ -207,7 +207,7 @@ export function StreakCard({ streak, bestStreak, weekLoggedDays }: Props) {
       <View style={[styles.card, { backgroundColor: colors.darkGreen }]}>
         {/* Best streak chip */}
         <View style={styles.bestChip}>
-          <Feather name="award" size={11} color="rgba(255,215,0,0.9)" />
+          <Feather name="award" size={11} color={colors.streakLightning} />
           <Text style={[styles.bestChipText, { fontFamily: "Inter_500Medium" }]}>
             Best: {bestStreak}d
           </Text>
@@ -236,7 +236,7 @@ export function StreakCard({ streak, bestStreak, weekLoggedDays }: Props) {
             <Animated.Text
               style={[
                 styles.streakNum,
-                { color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold" },
                 numStyle,
               ]}
             >
@@ -246,7 +246,7 @@ export function StreakCard({ streak, bestStreak, weekLoggedDays }: Props) {
               style={[
                 styles.streakLabel,
                 {
-                  color: "rgba(255,255,255,0.7)",
+                  color: colors.whiteOverlay70,
                   fontFamily: "Inter_400Regular",
                 },
               ]}
@@ -261,7 +261,7 @@ export function StreakCard({ streak, bestStreak, weekLoggedDays }: Props) {
               style={[
                 styles.dotsTitle,
                 {
-                  color: "rgba(255,255,255,0.55)",
+                  color: colors.whiteOverlay55,
                   fontFamily: "Inter_400Regular",
                 },
               ]}
@@ -287,7 +287,7 @@ export function StreakCard({ streak, bestStreak, weekLoggedDays }: Props) {
             style={[
               styles.footerText,
               {
-                color: "rgba(255,255,255,0.75)",
+                color: colors.whiteOverlay75,
                 fontFamily: "Inter_400Regular",
               },
             ]}
@@ -314,9 +314,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: palette.light.whiteOverlay12,
   },
-  bestChipText: { color: "rgba(255,215,0,0.9)", fontSize: 11 },
+  bestChipText: { color: palette.light.streakLightning, fontSize: 11 },
   mainRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   dotLabel: { fontSize: 8 },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
+    borderTopColor: palette.light.whiteOverlay10,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },

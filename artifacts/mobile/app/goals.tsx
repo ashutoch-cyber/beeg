@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import palette from "@/constants/colors";
 import { useAuth } from "@/context/AuthContext";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
@@ -73,17 +74,17 @@ export default function GoalsScreen() {
   };
 
   const nutritionFields = [
-    { label: "Daily Calories", value: calories, onChangeText: setCalories, unit: "kcal", color: "#FF6B35" },
-    { label: "Protein", value: protein, onChangeText: setProtein, unit: "g", color: "#2196F3" },
-    { label: "Carbs", value: carbs, onChangeText: setCarbs, unit: "g", color: "#FFC107" },
-    { label: "Fat", value: fat, onChangeText: setFat, unit: "g", color: "#F44336" },
-    { label: "Fibre", value: fibre, onChangeText: setFibre, unit: "g", color: "#4CAF50" },
+    { label: "Daily Calories", value: calories, onChangeText: setCalories, unit: "kcal", color: colors.fatRed },
+    { label: "Protein", value: protein, onChangeText: setProtein, unit: "g", color: colors.proteinBlue },
+    { label: "Carbs", value: carbs, onChangeText: setCarbs, unit: "g", color: colors.carbsYellow },
+    { label: "Fat", value: fat, onChangeText: setFat, unit: "g", color: colors.fatRed },
+    { label: "Fibre", value: fibre, onChangeText: setFibre, unit: "g", color: colors.fibreGreen },
   ];
 
   const estimatedMonthlyCost = (monthScans * COST_PER_SCAN).toFixed(4);
   const limitProgress = scanLimit > 0 ? Math.min(todayScans / scanLimit, 1) : 0;
   const limitPct = Math.round(limitProgress * 100);
-  const limitBarColor = limitProgress >= 1 ? "#F44336" : limitProgress >= 0.8 ? "#FFC107" : colors.vibrantGreen;
+  const limitBarColor = limitProgress >= 1 ? colors.fatRed : limitProgress >= 0.8 ? colors.carbsYellow : colors.highlightGreen;
 
   // Last 7 days for the mini chart
   const last7: { label: string; count: number }[] = [];
@@ -101,7 +102,7 @@ export default function GoalsScreen() {
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPadding + 12, backgroundColor: colors.darkGreen }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="x" size={24} color="#FFFFFF" />
+          <Feather name="x" size={24} color={colors.whiteTextOnGreen} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { fontFamily: "Inter_700Bold" }]}>Goals & Usage</Text>
         <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
@@ -173,9 +174,9 @@ export default function GoalsScreen() {
         {/* Stats row */}
         <View style={styles.statsRow}>
           {[
-            { label: "Today", value: todayScans.toString(), icon: "zap" as const, color: colors.vibrantGreen },
-            { label: "This month", value: monthScans.toString(), icon: "calendar" as const, color: "#2196F3" },
-            { label: "Est. cost", value: `$${estimatedMonthlyCost}`, icon: "dollar-sign" as const, color: "#FF6B35" },
+            { label: "Today", value: todayScans.toString(), icon: "zap" as const, color: colors.highlightGreen },
+            { label: "This month", value: monthScans.toString(), icon: "calendar" as const, color: colors.proteinBlue },
+            { label: "Est. cost", value: `$${estimatedMonthlyCost}`, icon: "dollar-sign" as const, color: colors.fatRed },
           ].map((s) => (
             <View key={s.label} style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Feather name={s.icon} size={18} color={s.color} />
@@ -212,7 +213,7 @@ export default function GoalsScreen() {
           </View>
 
           {/* Progress bar */}
-          <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
+          <View style={[styles.progressTrack, { backgroundColor: colors.lightAccentGreen }]}>
             <View
               style={[
                 styles.progressFill,
@@ -244,11 +245,11 @@ export default function GoalsScreen() {
             </View>
           </View>
           <TouchableOpacity
-            style={[styles.signOutBtn, { borderColor: "#F44336" }]}
+            style={[styles.signOutBtn, { borderColor: colors.fatRed }]}
             onPress={handleSignOut}
             activeOpacity={0.8}
           >
-            <Feather name="log-out" size={16} color="#F44336" />
+            <Feather name="log-out" size={16} color={colors.fatRed} />
             <Text style={[styles.signOutText, { fontFamily: "Inter_600SemiBold" }]}>Sign Out</Text>
           </TouchableOpacity>
         </View>
@@ -264,11 +265,11 @@ export default function GoalsScreen() {
               const isToday = i === 6;
               return (
                 <View key={i} style={styles.barCol}>
-                  <Text style={[styles.barCount, { color: d.count > 0 ? colors.vibrantGreen : "transparent", fontFamily: "Inter_600SemiBold" }]}>
+                  <Text style={[styles.barCount, { color: d.count > 0 ? colors.highlightGreen : "transparent", fontFamily: "Inter_600SemiBold" }]}>
                     {d.count}
                   </Text>
-                  <View style={[styles.barTrack, { backgroundColor: colors.muted }]}>
-                    <View style={[styles.barFill, { height: barH, backgroundColor: isToday ? colors.darkGreen : colors.vibrantGreen, opacity: isToday ? 1 : 0.65 }]} />
+                  <View style={[styles.barTrack, { backgroundColor: colors.lightAccentGreen }]}>
+                    <View style={[styles.barFill, { height: barH, backgroundColor: isToday ? colors.primaryGreen : colors.highlightGreen, opacity: isToday ? 1 : 0.65 }]} />
                   </View>
                   <Text style={[styles.barLabel, { color: isToday ? colors.darkGreen : colors.mutedForeground, fontFamily: isToday ? "Inter_700Bold" : "Inter_400Regular" }]}>
                     {d.label}
@@ -278,7 +279,7 @@ export default function GoalsScreen() {
             })}
           </View>
 
-          <View style={[styles.costNote, { backgroundColor: colors.muted }]}>
+          <View style={[styles.costNote, { backgroundColor: colors.lightAccentGreen }]}>
             <Feather name="info" size={13} color={colors.mutedForeground} />
             <Text style={[styles.costNoteText, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
               Google's free tier covers 1,500 scans/day before any charges apply.
@@ -297,9 +298,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 16,
   },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 18, color: "#FFFFFF" },
-  saveBtn: { minHeight: 44, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 12, justifyContent: "center" },
-  saveText: { color: "#FFFFFF", fontSize: 15 },
+  headerTitle: { fontSize: 18, color: palette.light.whiteTextOnGreen },
+  saveBtn: { minHeight: 44, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: palette.light.whiteOverlay15, borderRadius: 12, justifyContent: "center" },
+  saveText: { color: palette.light.whiteTextOnGreen, fontSize: 15 },
   scroll: { flex: 1 },
   content: { padding: 16, gap: 14 },
   desktopContent: { width: "100%", maxWidth: 760, alignSelf: "center" },
@@ -353,12 +354,12 @@ const styles = StyleSheet.create({
   accountCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 14 },
   accountRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatarCircle: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#FFFFFF", fontSize: 18, fontFamily: "Inter_700Bold" },
+  avatarText: { color: palette.light.whiteTextOnGreen, fontSize: 18, fontFamily: "Inter_700Bold" },
   accountEmail: { fontSize: 15 },
   accountSub: { fontSize: 12, marginTop: 2 },
   signOutBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 8, minHeight: 48, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5,
   },
-  signOutText: { color: "#F44336", fontSize: 15 },
+  signOutText: { color: palette.light.macroFatColor, fontSize: 15 },
 });

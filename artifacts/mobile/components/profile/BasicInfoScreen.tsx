@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import palette from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 import { isDesktopWidth } from "@/lib/responsive";
 
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   genderText: { fontSize: 14 },
-  errorText: { color: "#D32F2F", fontSize: 13 },
+  errorText: { color: palette.light.macroFatColor, fontSize: 13 },
   saveBtn: {
     minHeight: 54,
     borderRadius: 16,
@@ -323,5 +324,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 8,
   },
-  saveText: { color: "#FFFFFF", fontSize: 17 },
+  saveText: { color: palette.light.whiteTextOnGreen, fontSize: 17 },
 });
