@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Image,
@@ -11,12 +10,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CalorieRing } from "@/components/CalorieRing";
-import { MacroBar } from "@/components/MacroBar";
-import { MealLogCard } from "@/components/MealLogCard";
-import { NutritionInsightCard } from "@/components/NutritionInsightCard";
-import { WeeklyChart } from "@/components/WeeklyChart";
 import { useAuth } from "@/context/AuthContext";
 import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
@@ -27,7 +22,7 @@ const MEAL_GROUPS = [
   { key: "breakfast", label: "Breakfast" },
   { key: "lunch", label: "Lunch" },
   { key: "dinner", label: "Dinner" },
-  { key: "snack", label: "Snack" },
+  { key: "snack", label: "Snacks" },
 ] as const;
 
 type MealKey = (typeof MEAL_GROUPS)[number]["key"];
@@ -51,10 +46,9 @@ function toDateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function getCurrentMonthDates() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+function getMonthDates(monthDate: Date) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   return Array.from({ length: daysInMonth }, (_, index) => {
@@ -76,20 +70,29 @@ export default function DashboardScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { todayTotals, goals, logs, removeLog } = useNutrition();
-  const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
+  const { todayTotals, goals } = useNutrition();
+  const todayDate = useMemo(() => new Date(), []);
+  const todayKey = useMemo(() => toDateKey(todayDate), [todayDate]);
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1),
+  );
+  const [selectedDate, setSelectedDate] = useState(todayKey);
   const [selectedLogs, setSelectedLogs] = useState<DashboardFoodLog[]>([]);
   const [loadingSelectedLogs, setLoadingSelectedLogs] = useState(false);
 
-  const today = new Date().toISOString().split("T")[0];
-  const todayLogs = logs.filter((l) => l.date === today);
-  const monthDates = useMemo(() => getCurrentMonthDates(), []);
+  const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const bottomPadding = Platform.OS === "web" ? 34 : 0;
+  const isDesktop = isDesktopWidth(width);
+  const ringSize = clampSize(width * 0.22, 92, isDesktop ? 132 : 112);
+  const monthDates = useMemo(() => getMonthDates(visibleMonth), [visibleMonth]);
+  const monthTitle = useMemo(
+    () => visibleMonth.toLocaleDateString([], { month: "long", year: "numeric" }),
+    [visibleMonth],
+  );
   const groupedSelectedLogs = useMemo(() => {
     const groups: Partial<Record<MealKey, DashboardFoodLog[]>> = {};
 
     for (const log of selectedLogs) {
-      if (!log.image_uri) continue;
-
       const key = getMealKey(log.meal_type);
       if (!key) continue;
 
@@ -102,11 +105,6 @@ export default function DashboardScreen() {
   const hasSelectedSnaps = MEAL_GROUPS.some(
     (meal) => (groupedSelectedLogs[meal.key]?.length ?? 0) > 0,
   );
-
-  const topPadding = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPadding = Platform.OS === "web" ? 34 : 0;
-  const isDesktop = isDesktopWidth(width);
-  const ringSize = clampSize(width * 0.46, 168, isDesktop ? 220 : 200);
 
   useEffect(() => {
     let cancelled = false;
@@ -151,6 +149,25 @@ export default function DashboardScreen() {
     };
   }, [selectedDate, user]);
 
+  const changeMonth = (direction: -1 | 1) => {
+    const nextMonth = new Date(
+      visibleMonth.getFullYear(),
+      visibleMonth.getMonth() + direction,
+      1,
+    );
+    const isCurrentMonth =
+      nextMonth.getFullYear() === todayDate.getFullYear() &&
+      nextMonth.getMonth() === todayDate.getMonth();
+    const nextSelectedDay = isCurrentMonth ? todayDate.getDate() : 1;
+
+    setVisibleMonth(nextMonth);
+    setSelectedDate(
+      toDateKey(
+        new Date(nextMonth.getFullYear(), nextMonth.getMonth(), nextSelectedDay),
+      ),
+    );
+  };
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -161,409 +178,331 @@ export default function DashboardScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text
-            style={[
-              styles.greeting,
-              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
-            ]}
-          >
-            {getGreeting()}
-          </Text>
-          <Text
-            style={[
-              styles.title,
-              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
-            ]}
-          >
-            Today's Nutrition
-          </Text>
-        </View>
-        <View style={styles.headerBtns}>
-          <TouchableOpacity
-            style={[styles.goalBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => router.push("/goals")}
-          >
-            <Feather name="target" size={20} color={colors.buttonGreen} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Daily Progress Card */}
       <View
         style={[
-          styles.dailyProgressCard,
-          { backgroundColor: colors.primaryGreen, shadowColor: colors.primaryGreen },
+          styles.progressCard,
+          { backgroundColor: colors.lightAccentGreen, borderColor: colors.border },
         ]}
       >
-        <View style={styles.progressRingColumn}>
-          <CalorieRing
-            consumed={todayTotals.calories}
-            goal={goals.calories}
-            size={ringSize}
-          />
+        <View style={styles.progressCopy}>
           <Text
             style={[
-              styles.progressLabel,
-              { color: colors.whiteTextOnGreen, fontFamily: "Inter_600SemiBold" },
+              styles.cardTitle,
+              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
             ]}
           >
             Daily Progress
           </Text>
-        </View>
-
-        <View style={styles.dateStripColumn}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.dateStripContent}
-          >
-            {monthDates.map((dateItem) => {
-              const selected = dateItem.date === selectedDate;
-              return (
-                <TouchableOpacity
-                  key={dateItem.date}
-                  onPress={() => setSelectedDate(dateItem.date)}
-                  style={[
-                    styles.datePill,
-                    {
-                      backgroundColor: selected
-                        ? colors.ctaDarkGreen
-                        : colors.whiteOverlay15,
-                      borderColor: selected
-                        ? colors.whiteTextOnGreen
-                        : colors.whiteOverlay25,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.dateNumber,
-                      {
-                        color: selected
-                          ? colors.whiteTextOnGreen
-                          : colors.whiteOverlay80,
-                        fontFamily: selected
-                          ? "Inter_700Bold"
-                          : "Inter_500Medium",
-                      },
-                    ]}
-                  >
-                    {dateItem.day}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      </View>
-
-      <View style={styles.snapViewer}>
-        {loadingSelectedLogs ? (
           <Text
             style={[
-              styles.snapEmptyText,
-              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+              styles.progressMeta,
+              { color: colors.bodyText, fontFamily: "Inter_500Medium" },
             ]}
           >
-            Loading snaps...
+            {Math.round(todayTotals.calories)} / {goals.calories} kcal
           </Text>
-        ) : hasSelectedSnaps ? (
-          MEAL_GROUPS.map((meal) => {
-            const mealLogs = groupedSelectedLogs[meal.key] ?? [];
-            if (mealLogs.length === 0) return null;
-
-            return (
-              <View key={meal.key} style={styles.mealSnapGroup}>
-                <Text
-                  style={[
-                    styles.mealSnapLabel,
-                    { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
-                  ]}
-                >
-                  {meal.label}
-                </Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.snapThumbRow}
-                >
-                  {mealLogs.map((log) =>
-                    log.image_uri ? (
-                      <Image
-                        key={log.id}
-                        source={{ uri: log.image_uri }}
-                        style={[
-                          styles.snapThumb,
-                          { backgroundColor: colors.card, borderColor: colors.border },
-                        ]}
-                        resizeMode="cover"
-                      />
-                    ) : null,
-                  )}
-                </ScrollView>
-              </View>
-            );
-          })
-        ) : (
-          <Text
-            style={[
-              styles.snapEmptyText,
-              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
-            ]}
-          >
-            No snaps logged for this day.
-          </Text>
-        )}
+        </View>
+        <ProgressRing
+          consumed={todayTotals.calories}
+          goal={goals.calories}
+          size={ringSize}
+        />
       </View>
 
-      {/* Macro Bars Card */}
       <View
         style={[
-          styles.macroCard,
+          styles.calendarCard,
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
-        <Text
-          style={[
-            styles.sectionTitle,
-            { color: colors.primaryGreen, fontFamily: "Inter_700Bold" },
-          ]}
-        >
-          Macros
-        </Text>
-        <View style={styles.macroList}>
-          <MacroBar
-            label="Protein"
-            current={todayTotals.protein}
-            goal={goals.protein}
-            color={colors.proteinBlue}
-          />
-          <MacroBar
-            label="Carbs"
-            current={todayTotals.carbs}
-            goal={goals.carbs}
-            color={colors.carbsYellow}
-          />
-          <MacroBar
-            label="Fat"
-            current={todayTotals.fat}
-            goal={goals.fat}
-            color={colors.fatRed}
-          />
-          <MacroBar
-            label="Fibre"
-            current={todayTotals.fibre}
-            goal={goals.fibre}
-            color={colors.fibreGreen}
-          />
-        </View>
-      </View>
-
-      {/* AI Nutrition Insight */}
-      <NutritionInsightCard
-        totals={todayTotals}
-        goals={goals}
-        hasLogs={todayLogs.length > 0}
-      />
-
-      {/* Weekly Chart */}
-      <WeeklyChart />
-
-      {/* Snap Food FAB */}
-      <TouchableOpacity
-        style={[styles.snapBtn, { backgroundColor: colors.ctaDarkGreen }]}
-        onPress={() => router.push("/snap")}
-        activeOpacity={0.85}
-      >
-        <Feather name="camera" size={22} color={colors.primaryForeground} />
-        <Text
-          style={[
-            styles.snapBtnText,
-            { color: colors.primaryForeground, fontFamily: "Inter_600SemiBold" },
-          ]}
-        >
-          Snap Food
-        </Text>
-      </TouchableOpacity>
-
-      {/* Today's Meals */}
-      {todayLogs.length > 0 && (
-        <>
+        <View style={styles.calendarHeader}>
+          <TouchableOpacity
+            onPress={() => changeMonth(-1)}
+            style={styles.monthButton}
+            hitSlop={8}
+          >
+            <Feather name="chevron-left" size={22} color={colors.primaryText} />
+          </TouchableOpacity>
           <Text
             style={[
-              styles.mealsTitle,
+              styles.monthTitle,
               { color: colors.primaryText, fontFamily: "Inter_700Bold" },
             ]}
           >
-            Today's Meals
+            {monthTitle}
           </Text>
-          {todayLogs.map((log) => (
-            <MealLogCard key={log.id} log={log} onDelete={removeLog} />
-          ))}
-        </>
-      )}
-
-      {todayLogs.length === 0 && (
-        <View
-          style={[
-            styles.emptyCard,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
-          <Feather name="sun" size={32} color={colors.mutedForeground} />
-          <Text
-            style={[
-              styles.emptyTitle,
-              { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
-            ]}
+          <TouchableOpacity
+            onPress={() => changeMonth(1)}
+            style={styles.monthButton}
+            hitSlop={8}
           >
-            No meals logged yet
-          </Text>
-          <Text
-            style={[
-              styles.emptyText,
-              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
-            ]}
-          >
-            Tap "Snap Food" to scan your first meal
-          </Text>
+            <Feather name="chevron-right" size={22} color={colors.primaryText} />
+          </TouchableOpacity>
         </View>
-      )}
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dateStripContent}
+        >
+          {monthDates.map((dateItem) => {
+            const selected = dateItem.date === selectedDate;
+            const isToday = dateItem.date === todayKey;
+            const highlighted = selected || isToday;
+
+            return (
+              <TouchableOpacity
+                key={dateItem.date}
+                onPress={() => setSelectedDate(dateItem.date)}
+                style={[
+                  styles.datePill,
+                  {
+                    backgroundColor: highlighted
+                      ? colors.ctaDarkGreen
+                      : colors.cardBackground,
+                    borderColor: highlighted ? colors.ctaDarkGreen : colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dateNumber,
+                    {
+                      color: highlighted ? colors.whiteTextOnGreen : colors.bodyText,
+                      fontFamily: highlighted ? "Inter_700Bold" : "Inter_500Medium",
+                    },
+                  ]}
+                >
+                  {dateItem.day}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <View style={styles.mealList}>
+          {loadingSelectedLogs ? (
+            <Text
+              style={[
+                styles.emptyText,
+                { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+              ]}
+            >
+              Loading snaps...
+            </Text>
+          ) : hasSelectedSnaps ? (
+            MEAL_GROUPS.map((meal) => {
+              const mealLogs = groupedSelectedLogs[meal.key] ?? [];
+              if (mealLogs.length === 0) return null;
+
+              return (
+                <View key={meal.key} style={styles.mealGroup}>
+                  <Text
+                    style={[
+                      styles.mealGroupTitle,
+                      { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
+                    ]}
+                  >
+                    {meal.label}
+                  </Text>
+                  {mealLogs.map((log) => (
+                    <View key={log.id} style={styles.mealRow}>
+                      {log.image_uri ? (
+                        <Image
+                          source={{ uri: log.image_uri }}
+                          style={styles.mealImage}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View
+                          style={[
+                            styles.mealImagePlaceholder,
+                            { backgroundColor: colors.lightAccentGreen },
+                          ]}
+                        >
+                          <Feather name="image" size={18} color={colors.mutedForeground} />
+                        </View>
+                      )}
+                      <View style={styles.mealInfo}>
+                        <Text
+                          style={[
+                            styles.mealName,
+                            { color: colors.bodyText, fontFamily: "Inter_600SemiBold" },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {log.dish_name}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.mealCalories,
+                            { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+                          ]}
+                        >
+                          {Math.round(log.calories)} kcal
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              );
+            })
+          ) : (
+            <Text
+              style={[
+                styles.emptyText,
+                { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+              ]}
+            >
+              No snaps logged for this day.
+            </Text>
+          )}
+        </View>
+      </View>
     </ScrollView>
   );
 }
 
-function getGreeting() {
-  const storage = (globalThis as typeof globalThis & {
-    localStorage?: { getItem: (key: string) => string | null };
-  }).localStorage;
-  let username = "";
-  try {
-    username = storage?.getItem("bee_username")?.trim() ?? "";
-  } catch {
-    username = "";
-  }
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  return `${greeting}${username ? `, ${username}` : ""}`;
+function ProgressRing({
+  consumed,
+  goal,
+  size,
+}: {
+  consumed: number;
+  goal: number;
+  size: number;
+}) {
+  const colors = useColors();
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth) / 2;
+  const center = size / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = goal > 0 ? Math.min(consumed / goal, 1) : 0;
+  const strokeDashoffset = circumference * (1 - progress);
+  const percentage = Math.round(progress * 100);
+
+  return (
+    <View style={[styles.ringWrap, { width: size, height: size }]}>
+      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+        <Circle
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke={colors.cardBackground}
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        <Circle
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke={colors.primaryGreen}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          rotation="-90"
+          origin={`${center}, ${center}`}
+        />
+      </Svg>
+      <Text
+        style={[
+          styles.ringText,
+          { color: colors.primaryText, fontFamily: "Inter_700Bold" },
+        ]}
+      >
+        {percentage}%
+      </Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { gap: 0 },
-  desktopContent: { width: "100%", maxWidth: 960, alignSelf: "center" },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+  content: {
+    paddingHorizontal: 16,
+    gap: 16,
   },
-  greeting: { fontSize: 13 },
-  title: { fontSize: 24, marginTop: 2 },
-  headerBtns: { flexDirection: "row", gap: 8 },
-  goalBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  desktopContent: { width: "100%", maxWidth: 960, alignSelf: "center" },
+  progressCard: {
+    borderRadius: 24,
     borderWidth: 1,
+    padding: 20,
+    minHeight: 150,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  progressCopy: {
+    flex: 1,
+    gap: 8,
+  },
+  cardTitle: { fontSize: 18 },
+  progressMeta: { fontSize: 14 },
+  ringWrap: {
     alignItems: "center",
     justifyContent: "center",
   },
-  dailyProgressCard: {
-    marginHorizontal: 16,
+  ringText: { fontSize: 18 },
+  calendarCard: {
     borderRadius: 24,
-    paddingVertical: 28,
-    paddingHorizontal: 20,
+    borderWidth: 1,
+    padding: 16,
+    gap: 16,
+  },
+  calendarHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 8,
-    marginBottom: 16,
+    justifyContent: "space-between",
   },
-  progressRingColumn: {
+  monthButton: {
+    width: 40,
+    height: 40,
     alignItems: "center",
-    gap: 8,
+    justifyContent: "center",
   },
-  progressLabel: { fontSize: 14 },
-  dateStripColumn: {
-    flex: 1,
-    minWidth: 0,
-  },
+  monthTitle: { fontSize: 18 },
   dateStripContent: {
     flexDirection: "row",
-    alignItems: "center",
     gap: 8,
     paddingVertical: 4,
   },
   datePill: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  dateNumber: { fontSize: 15 },
-  snapViewer: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    gap: 14,
-  },
-  mealSnapGroup: { gap: 8 },
-  mealSnapLabel: { fontSize: 14 },
-  snapThumbRow: {
-    gap: 8,
+  dateNumber: { fontSize: 14 },
+  mealList: { gap: 16 },
+  mealGroup: { gap: 10 },
+  mealGroupTitle: { fontSize: 15 },
+  mealRow: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
-  snapThumb: {
-    width: 64,
-    height: 64,
+  mealImage: {
+    width: 52,
+    height: 52,
     borderRadius: 12,
-    borderWidth: 1,
   },
-  snapEmptyText: { fontSize: 13 },
-  macroCard: {
-    marginHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 20,
-    gap: 16,
-    marginBottom: 16,
-  },
-  sectionTitle: { fontSize: 17 },
-  macroList: { gap: 14 },
-  snapBtn: {
-    marginHorizontal: 16,
-    borderRadius: 16,
-    minHeight: 48,
-    paddingVertical: 16,
-    flexDirection: "row",
+  mealImagePlaceholder: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
-    marginBottom: 24,
   },
-  snapBtnText: { fontSize: 16 },
-  mealsTitle: {
-    fontSize: 17,
-    paddingHorizontal: 20,
-    paddingBottom: 12,
+  mealInfo: {
+    flex: 1,
+    gap: 2,
   },
-  emptyCard: {
-    marginHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 32,
-    alignItems: "center",
-    gap: 10,
-  },
-  emptyTitle: { fontSize: 16 },
-  emptyText: { fontSize: 13, textAlign: "center" },
+  mealName: { fontSize: 14 },
+  mealCalories: { fontSize: 12 },
+  emptyText: { fontSize: 13 },
 });

@@ -106,8 +106,18 @@ function ClassicTabLayout() {
         options={{
           title: "Snap",
           href: "/snap",
-          tabBarIcon: ({ color }) => (
-            <Feather name="camera" size={22} color={color} />
+          tabBarIcon: () => (
+            <View
+              style={[
+                styles.snapTabButton,
+                {
+                  backgroundColor: colors.ctaDarkGreen,
+                  shadowColor: colors.ctaDarkGreen,
+                },
+              ]}
+            >
+              <Feather name="camera" size={28} color={colors.whiteTextOnGreen} />
+            </View>
           ),
         }}
       />
@@ -145,3 +155,18 @@ export default function TabLayout() {
   }
   return <ClassicTabLayout />;
 }
+
+const styles = StyleSheet.create({
+  snapTabButton: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -26,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});
