@@ -16,6 +16,7 @@ import Svg, { Circle } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useNutrition } from "@/context/NutritionContext";
+import { useProfile } from "@/context/ProfileContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth } from "@/lib/responsive";
 import { supabase } from "@/lib/supabase";
@@ -146,9 +147,18 @@ function getMealKey(mealType: string): MealKey | null {
   return MEAL_GROUPS.some((meal) => meal.key === key) ? (key as MealKey) : null;
 }
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "Good Morning";
+  if (hour >= 12 && hour < 17) return "Good Afternoon";
+  if (hour >= 17 && hour < 21) return "Good Evening";
+  return "Good Night";
+}
+
 export default function DashboardScreen() {
   const colors = useColors();
   const { user } = useAuth();
+  const { username, avatarUrl, refreshProfile } = useProfile();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { todayTotals, goals, foodLogRefreshToken } = useNutrition();
@@ -164,6 +174,7 @@ export default function DashboardScreen() {
   const [macroTotals, setMacroTotals] = useState<DashboardMacroTotals>(EMPTY_MACRO_TOTALS);
   const [loadingMacroTotals, setLoadingMacroTotals] = useState(true);
   const [selectedLogsRefreshToken, setSelectedLogsRefreshToken] = useState(0);
+  const [greeting, setGreeting] = useState(() => getGreeting());
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : 0;
@@ -287,6 +298,10 @@ export default function DashboardScreen() {
       );
       setSelectedDate(focusedTodayKey);
       setSelectedLogsRefreshToken((token) => token + 1);
+      setGreeting(getGreeting());
+      refreshProfile().catch((error) => {
+        console.error("Failed to refresh profile", error);
+      });
       scrollTodayIntoView(focusedTodayDate, false);
 
       const loadTodaysMacroTotals = async () => {
@@ -335,7 +350,7 @@ export default function DashboardScreen() {
       return () => {
         cancelled = true;
       };
-    }, [foodLogRefreshToken, scrollTodayIntoView, user]),
+    }, [foodLogRefreshToken, refreshProfile, scrollTodayIntoView, user]),
   );
 
   const changeMonth = (direction: -1 | 1) => {
@@ -372,6 +387,42 @@ export default function DashboardScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
+      <View style={styles.greetingRow}>
+        <View style={styles.greetingCopy}>
+          <Text
+            style={[
+              styles.greetingMeta,
+              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+            ]}
+          >
+            {greeting},
+          </Text>
+          <Text
+            style={[
+              styles.greetingName,
+              { color: colors.primaryText, fontFamily: "Inter_700Bold" },
+            ]}
+            numberOfLines={1}
+          >
+            {(username?.trim() || "there")}!!
+          </Text>
+        </View>
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.greetingAvatar} resizeMode="cover" />
+        ) : (
+          <View style={[styles.greetingFallbackAvatar, { backgroundColor: colors.primaryGreen }]}>
+            <Text
+              style={[
+                styles.greetingFallbackInitial,
+                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold" },
+              ]}
+            >
+              {(username?.trim()?.[0] ?? "?").toUpperCase()}
+            </Text>
+          </View>
+        )}
+      </View>
+
       <View
         style={[
           styles.progressCard,
@@ -756,6 +807,30 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   desktopContent: { width: "100%", maxWidth: 960, alignSelf: "center" },
+  greetingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  greetingCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  greetingMeta: { fontSize: 13 },
+  greetingName: { fontSize: 18 },
+  greetingAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  greetingFallbackAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  greetingFallbackInitial: { fontSize: 20 },
   progressCard: {
     borderRadius: 24,
     borderWidth: 1,

@@ -19,6 +19,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { NutritionProvider } from "@/context/NutritionContext";
+import { ProfileProvider } from "@/context/ProfileContext";
 
 if (process.env.EXPO_PUBLIC_DOMAIN) {
   setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -136,15 +137,17 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <NutritionProvider>
-              <GestureHandlerRootView style={styles.appRoot}>
-                <KeyboardProvider>
-                  <AuthGate>
-                    <RootLayoutNav />
-                  </AuthGate>
-                </KeyboardProvider>
-              </GestureHandlerRootView>
-            </NutritionProvider>
+            <ProfileProvider>
+              <NutritionProvider>
+                <GestureHandlerRootView style={styles.appRoot}>
+                  <KeyboardProvider>
+                    <AuthGate>
+                      <RootLayoutNav />
+                    </AuthGate>
+                  </KeyboardProvider>
+                </GestureHandlerRootView>
+              </NutritionProvider>
+            </ProfileProvider>
           </AuthProvider>
         </QueryClientProvider>
       </ErrorBoundary>

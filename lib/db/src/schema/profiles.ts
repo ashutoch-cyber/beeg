@@ -10,6 +10,10 @@ export const profiles = pgTable("profiles", {
     .references(() => authUsers.id, { onDelete: "cascade" }),
   email: text("email"),
   displayName: text("display_name"),
+  username: text("username"),
+  avatarUrl: text("avatar_url"),
+  bio: text("bio"),
+  location: text("location"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

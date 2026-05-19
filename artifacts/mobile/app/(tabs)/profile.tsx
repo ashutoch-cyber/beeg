@@ -1,7 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Platform,
   ScrollView,
@@ -22,10 +24,10 @@ import {
   PROFILE_GREEN,
   formatStoredDate,
   readJsonStorage,
-  readStorage,
-  writeStorage,
 } from "@/components/profile/storage";
+import { useAuth } from "@/context/AuthContext";
 import { useNutrition } from "@/context/NutritionContext";
+import { useProfile } from "@/context/ProfileContext";
 import { useColors } from "@/hooks/useColors";
 import { isDesktopWidth } from "@/lib/responsive";
 
@@ -47,45 +49,62 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isDesktop = isDesktopWidth(width);
+  const { user } = useAuth();
   const { goals } = useNutrition();
+  const {
+    username: profileUsername,
+    avatarUrl,
+    bio: profileBio,
+    location: profileLocation,
+    updateProfile,
+    updateAvatar,
+    refreshProfile,
+  } = useProfile();
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>("profile");
   const [username, setUsername] = useState("");
   const [usernameInput, setUsernameInput] = useState("");
   const [bio, setBio] = useState("");
   const [bioInput, setBioInput] = useState("");
   const [location, setLocation] = useState("");
-  const [firstVisit, setFirstVisit] = useState("");
   const [avatar, setAvatar] = useState("");
   const [toast, setToast] = useState("");
   const [locationError, setLocationError] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : insets.bottom;
 
-  const loadProfile = () => {
-    const storedUsername = readStorage("bee_username") ?? "";
-    const storedBio = readStorage("bee_bio") ?? "";
-    const storedLocation = readStorage("bee_location") ?? "";
-    const storedAvatar = readStorage("bee_avatar") ?? "";
-    let storedFirstVisit = readStorage("bee_first_visit");
+  const showToast = useCallback((message = "Saved successfully!") => {
+    setToast(message);
+  }, []);
 
-    if (!storedFirstVisit) {
-      storedFirstVisit = new Date().toISOString();
-      writeStorage("bee_first_visit", storedFirstVisit);
-    }
+  const syncProfileFields = useCallback(() => {
+    const nextUsername = profileUsername ?? "";
+    const nextBio = profileBio ?? "";
+    const nextLocation = profileLocation ?? "";
+    const nextAvatar = avatarUrl ?? "";
 
-    setUsername(storedUsername);
-    setUsernameInput(storedUsername);
-    setBio(storedBio);
-    setBioInput(storedBio);
-    setLocation(storedLocation);
-    setFirstVisit(storedFirstVisit);
-    setAvatar(storedAvatar);
-  };
+    setUsername(nextUsername);
+    setUsernameInput(nextUsername);
+    setBio(nextBio);
+    setBioInput(nextBio);
+    setLocation(nextLocation);
+    setAvatar(nextAvatar);
+  }, [avatarUrl, profileBio, profileLocation, profileUsername]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile()
+        .then(syncProfileFields)
+        .catch(() => {
+          showToast("Could not load profile.");
+        });
+    }, [refreshProfile, showToast, syncProfileFields]),
+  );
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    syncProfileFields();
+  }, [syncProfileFields]);
 
   useEffect(() => {
     if (!toast) return;
@@ -93,12 +112,7 @@ export default function ProfileScreen() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const showToast = (message = "Saved successfully!") => {
-    setToast(message);
-  };
-
   const handleSubScreenSaved = (message = "Saved successfully!") => {
-    loadProfile();
     setActiveScreen("profile");
     showToast(message);
   };
@@ -128,18 +142,26 @@ export default function ProfileScreen() {
   const savedGoal = readJsonStorage<SavedGoal | null>("bee_goal", null);
   const initials = getInitials(username);
 
-  const saveUsername = () => {
+  const saveUsername = async () => {
     const value = usernameInput.slice(0, 30);
-    writeStorage("bee_username", value);
-    setUsername(value);
-    showToast();
+    try {
+      await updateProfile({ username: value });
+      setUsername(value);
+      showToast();
+    } catch {
+      showToast("Could not save username.");
+    }
   };
 
-  const saveBio = () => {
+  const saveBio = async () => {
     const value = bioInput.slice(0, 150);
-    writeStorage("bee_bio", value);
-    setBio(value);
-    showToast();
+    try {
+      await updateProfile({ bio: value });
+      setBio(value);
+      showToast();
+    } catch {
+      showToast("Could not save bio.");
+    }
   };
 
   const pickAvatar = async () => {
@@ -161,11 +183,14 @@ export default function ProfileScreen() {
       }
 
       const dataUri = `data:${asset.mimeType ?? "image/jpeg"};base64,${asset.base64}`;
-      writeStorage("bee_avatar", dataUri);
-      setAvatar(dataUri);
+      setUploadingAvatar(true);
+      const publicUrl = await updateAvatar(dataUri);
+      setAvatar(publicUrl);
       showToast();
     } catch {
-      showToast("Could not open image picker.");
+      showToast("Could not update profile photo.");
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -201,7 +226,7 @@ export default function ProfileScreen() {
           const country = address.country || "";
           const full = [place, country].filter(Boolean).join(", ");
           const value = full || "Location detected";
-          writeStorage("bee_location", value);
+          await updateProfile({ location: value });
           setLocation(value);
           setLocationError("");
         } catch {
@@ -232,6 +257,11 @@ export default function ProfileScreen() {
                 <Text style={[styles.avatarInitials, { fontFamily: "Inter_700Bold" }]}>{initials}</Text>
               </View>
             )}
+            {uploadingAvatar ? (
+              <View style={styles.avatarLoadingOverlay}>
+                <ActivityIndicator size="small" color={colors.whiteTextOnGreen} />
+              </View>
+            ) : null}
             <View style={styles.cameraBadge}>
               <Feather name="camera" size={15} color={colors.whiteTextOnGreen} />
             </View>
@@ -240,7 +270,7 @@ export default function ProfileScreen() {
             {username || "Bee User"}
           </Text>
           <Text style={[styles.headerMeta, { fontFamily: "Inter_400Regular" }]}>
-            User since: {formatStoredDate(firstVisit) || "Today"}
+            User since: {formatStoredDate(user?.created_at ?? null) || "Today"}
           </Text>
           <Text style={[styles.headerMeta, { fontFamily: "Inter_400Regular" }]}>
             {location || "Location not set"}
@@ -432,6 +462,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarInitials: { color: palette.light.whiteTextOnGreen, fontSize: 28 },
+  avatarLoadingOverlay: {
+    position: "absolute",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: palette.light.primaryGreenOverlay70,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   cameraBadge: {
     position: "absolute",
     right: 4,
