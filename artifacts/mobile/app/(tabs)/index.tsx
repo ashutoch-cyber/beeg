@@ -388,6 +388,20 @@ export default function DashboardScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.greetingRow}>
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.greetingAvatar} resizeMode="cover" />
+        ) : (
+          <View style={[styles.greetingFallbackAvatar, { backgroundColor: colors.primaryGreen }]}>
+            <Text
+              style={[
+                styles.greetingFallbackInitial,
+                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold" },
+              ]}
+            >
+              {(username?.trim()?.[0] ?? "?").toUpperCase()}
+            </Text>
+          </View>
+        )}
         <View style={styles.greetingCopy}>
           <Text
             style={[
@@ -407,20 +421,6 @@ export default function DashboardScreen() {
             {(username?.trim() || "there")}!!
           </Text>
         </View>
-        {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.greetingAvatar} resizeMode="cover" />
-        ) : (
-          <View style={[styles.greetingFallbackAvatar, { backgroundColor: colors.primaryGreen }]}>
-            <Text
-              style={[
-                styles.greetingFallbackInitial,
-                { color: colors.whiteTextOnGreen, fontFamily: "Inter_700Bold" },
-              ]}
-            >
-              {(username?.trim()?.[0] ?? "?").toUpperCase()}
-            </Text>
-          </View>
-        )}
       </View>
 
       <View
