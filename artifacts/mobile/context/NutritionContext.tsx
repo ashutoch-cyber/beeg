@@ -55,6 +55,7 @@ interface NutritionContextType {
   scanLimit: number;
   todayScans: number;
   monthScans: number;
+  foodLogRefreshToken: number;
   streak: number;
   bestStreak: number;
   weekLoggedDays: boolean[];
@@ -98,6 +99,7 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
   const [goals, setGoals] = useState<DailyGoals>(DEFAULT_GOALS);
   const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
   const [scanLimit, setScanLimit] = useState(DEFAULT_SCAN_LIMIT);
+  const [foodLogRefreshToken, setFoodLogRefreshToken] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -199,7 +201,10 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
-    if (!user) return;
+    if (!user) {
+      setFoodLogRefreshToken((token) => token + 1);
+      return;
+    }
 
     try {
       const { error } = await supabase.from("food_logs").insert({
@@ -219,6 +224,8 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Failed to sync food log to Supabase", error);
+    } finally {
+      setFoodLogRefreshToken((token) => token + 1);
     }
   }, [user]);
 
@@ -262,6 +269,7 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         scanLimit,
         todayScans,
         monthScans,
+        foodLogRefreshToken,
         streak,
         bestStreak,
         weekLoggedDays,

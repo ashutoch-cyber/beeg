@@ -1,6 +1,8 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   Image,
   Platform,
   ScrollView,
@@ -39,6 +41,66 @@ interface DashboardFoodLog {
   logged_at: string;
 }
 
+interface DashboardMacroTotals {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+interface DashboardMacroRow {
+  calories: number | null;
+  protein: number | null;
+  carbs: number | null;
+  fat: number | null;
+}
+
+// Dashboard macro card daily target defaults. Replace with user goals when dynamic goals are wired here.
+const DEFAULT_MACRO_GOALS = {
+  protein: 120,
+  carbs: 300,
+  fat: 80,
+  calories: 2500,
+} as const;
+
+const EMPTY_MACRO_TOTALS: DashboardMacroTotals = {
+  calories: 0,
+  protein: 0,
+  carbs: 0,
+  fat: 0,
+};
+
+const DASHBOARD_MACRO_CARDS = [
+  {
+    key: "protein",
+    label: "Protein",
+    unit: "g",
+    backgroundColor: "#D4E8D0",
+    fillColor: "#6A9E7A",
+  },
+  {
+    key: "carbs",
+    label: "Carbs",
+    unit: "g",
+    backgroundColor: "#C8DFF5",
+    fillColor: "#5A9AC0",
+  },
+  {
+    key: "fat",
+    label: "Fats",
+    unit: "g",
+    backgroundColor: "#FDDCB5",
+    fillColor: "#E8943A",
+  },
+  {
+    key: "calories",
+    label: "Calories",
+    unit: "kcal",
+    backgroundColor: "#F5C8C8",
+    fillColor: "#D96B6B",
+  },
+] as const;
+
 function toDateKey(date: Date) {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -70,7 +132,7 @@ export default function DashboardScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { todayTotals, goals } = useNutrition();
+  const { todayTotals, goals, foodLogRefreshToken } = useNutrition();
   const todayDate = useMemo(() => new Date(), []);
   const todayKey = useMemo(() => toDateKey(todayDate), [todayDate]);
   const [visibleMonth, setVisibleMonth] = useState(
@@ -79,6 +141,8 @@ export default function DashboardScreen() {
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [selectedLogs, setSelectedLogs] = useState<DashboardFoodLog[]>([]);
   const [loadingSelectedLogs, setLoadingSelectedLogs] = useState(false);
+  const [macroTotals, setMacroTotals] = useState<DashboardMacroTotals>(EMPTY_MACRO_TOTALS);
+  const [loadingMacroTotals, setLoadingMacroTotals] = useState(true);
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : 0;
@@ -149,6 +213,59 @@ export default function DashboardScreen() {
     };
   }, [selectedDate, user]);
 
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      const loadTodaysMacroTotals = async () => {
+        if (!user) {
+          setMacroTotals(EMPTY_MACRO_TOTALS);
+          setLoadingMacroTotals(false);
+          return;
+        }
+
+        setLoadingMacroTotals(true);
+
+        const { data, error } = await supabase
+          .from("food_logs")
+          .select("calories,protein,carbs,fat")
+          .eq("user_id", user.id)
+          .eq("date", toDateKey(new Date()));
+
+        if (cancelled) return;
+
+        if (error) {
+          console.error("Failed to load today's macro totals", error);
+          setMacroTotals(EMPTY_MACRO_TOTALS);
+        } else {
+          const totals = ((data ?? []) as DashboardMacroRow[]).reduce<DashboardMacroTotals>(
+            (acc, row) => ({
+              calories: acc.calories + (row.calories ?? 0),
+              protein: acc.protein + (row.protein ?? 0),
+              carbs: acc.carbs + (row.carbs ?? 0),
+              fat: acc.fat + (row.fat ?? 0),
+            }),
+            EMPTY_MACRO_TOTALS,
+          );
+          setMacroTotals(totals);
+        }
+
+        setLoadingMacroTotals(false);
+      };
+
+      loadTodaysMacroTotals().catch((error) => {
+        if (cancelled) return;
+        console.error("Failed to load today's macro totals", error);
+        setMacroTotals(EMPTY_MACRO_TOTALS);
+        setLoadingMacroTotals(false);
+      });
+
+      return () => {
+        cancelled = true;
+      };
+    }, [foodLogRefreshToken, user]),
+  );
+
   const changeMonth = (direction: -1 | 1) => {
     const nextMonth = new Date(
       visibleMonth.getFullYear(),
@@ -207,6 +324,21 @@ export default function DashboardScreen() {
           goal={goals.calories}
           size={ringSize}
         />
+      </View>
+
+      <View style={styles.macroCardsGrid}>
+        {DASHBOARD_MACRO_CARDS.map((macro) => (
+          <DashboardMacroCard
+            key={macro.key}
+            label={macro.label}
+            consumed={macroTotals[macro.key]}
+            goal={DEFAULT_MACRO_GOALS[macro.key]}
+            unit={macro.unit}
+            backgroundColor={macro.backgroundColor}
+            fillColor={macro.fillColor}
+            loading={loadingMacroTotals}
+          />
+        ))}
       </View>
 
       <View
@@ -363,6 +495,81 @@ export default function DashboardScreen() {
   );
 }
 
+function DashboardMacroCard({
+  label,
+  consumed,
+  goal,
+  unit,
+  backgroundColor,
+  fillColor,
+  loading,
+}: {
+  label: string;
+  consumed: number;
+  goal: number;
+  unit: "g" | "kcal";
+  backgroundColor: string;
+  fillColor: string;
+  loading: boolean;
+}) {
+  const colors = useColors();
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const progress = loading || goal <= 0 ? 0 : Math.min(consumed / goal, 1);
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0%", "100%"],
+  });
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 350,
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressAnim]);
+
+  const roundedConsumed = Math.round(consumed);
+  const valueText = loading
+    ? "Loading..."
+    : unit === "kcal"
+      ? `${roundedConsumed} / ${goal} kcal`
+      : `${roundedConsumed}g / ${goal}g`;
+
+  return (
+    <View
+      style={[
+        styles.macroCard,
+        { backgroundColor, borderColor: colors.border },
+      ]}
+    >
+      <Text
+        style={[
+          styles.macroCardLabel,
+          { color: colors.primaryText, fontFamily: "Inter_700Bold" },
+        ]}
+      >
+        {label}
+      </Text>
+      <View style={styles.macroProgressTrack}>
+        <Animated.View
+          style={[
+            styles.macroProgressFill,
+            { backgroundColor: fillColor, width: progressWidth as any },
+          ]}
+        />
+      </View>
+      <Text
+        style={[
+          styles.macroCardMeta,
+          { color: colors.bodyText, fontFamily: "Inter_500Medium" },
+        ]}
+      >
+        {valueText}
+      </Text>
+    </View>
+  );
+}
+
 function ProgressRing({
   consumed,
   goal,
@@ -441,6 +648,35 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 18 },
   progressMeta: { fontSize: 14 },
+  macroCardsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+  },
+  macroCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    flexShrink: 1,
+    height: 90,
+    minWidth: 0,
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 14,
+    justifyContent: "space-between",
+  },
+  macroCardLabel: { fontSize: 15 },
+  macroProgressTrack: {
+    width: "100%",
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+  },
+  macroProgressFill: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  macroCardMeta: { fontSize: 13 },
   ringWrap: {
     alignItems: "center",
     justifyContent: "center",
