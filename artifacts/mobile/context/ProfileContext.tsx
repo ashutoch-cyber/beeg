@@ -9,6 +9,11 @@ interface ProfileRow {
   location: string | null;
 }
 
+interface LegacyProfileRow {
+  email: string | null;
+  display_name: string | null;
+}
+
 interface ProfileContextType {
   username: string | null;
   avatarUrl: string | null;
@@ -26,6 +31,8 @@ interface ProfileContextType {
 
 const ProfileContext = createContext<ProfileContextType | null>(null);
 
+type ProfileSchemaMode = "unknown" | "modern" | "legacy";
+
 function getDefaultUsername(email?: string | null) {
   return email?.split("@")[0] ?? null;
 }
@@ -42,10 +49,22 @@ function getExtension(contentType: string) {
   return "jpg";
 }
 
+function isMissingProfileFieldError(error: { message?: string; details?: string; hint?: string }) {
+  const text = `${error.message ?? ""} ${error.details ?? ""} ${error.hint ?? ""}`.toLowerCase();
+  return (
+    text.includes("username") ||
+    text.includes("avatar_url") ||
+    text.includes("bio") ||
+    text.includes("location") ||
+    text.includes("schema cache")
+  );
+}
+
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [schemaMode, setSchemaMode] = useState<ProfileSchemaMode>("unknown");
 
   const refreshProfile = useCallback(async () => {
     if (!user) {
@@ -58,7 +77,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("username,avatar_url,bio,location")
+      .select("*")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -71,16 +90,25 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         location: null,
       });
     } else {
-      setProfile(
-        data
-          ? (data as ProfileRow)
-          : {
-              username: getDefaultUsername(user.email),
-              avatar_url: null,
-              bio: null,
-              location: null,
-            },
+      const rawProfile = data as (LegacyProfileRow & Partial<ProfileRow>) | null;
+      const hasModernFields = Boolean(
+        rawProfile &&
+          ("username" in rawProfile ||
+            "avatar_url" in rawProfile ||
+            "bio" in rawProfile ||
+            "location" in rawProfile),
       );
+
+      setSchemaMode(hasModernFields || !rawProfile ? "modern" : "legacy");
+      setProfile({
+        username:
+          rawProfile?.username ??
+          rawProfile?.display_name ??
+          getDefaultUsername(rawProfile?.email ?? user.email),
+        avatar_url: rawProfile?.avatar_url ?? null,
+        bio: rawProfile?.bio ?? null,
+        location: rawProfile?.location ?? null,
+      });
     }
 
     setLoading(false);
@@ -97,6 +125,32 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     async (data: { username?: string; bio?: string; location?: string }) => {
       if (!user) return;
 
+      if (schemaMode === "legacy") {
+        if (data.bio !== undefined || data.location !== undefined) {
+          throw new Error("Profile details require the latest database migration.");
+        }
+
+        const { error } = await supabase.from("profiles").upsert(
+          {
+            id: user.id,
+            email: user.email ?? null,
+            display_name: data.username ?? getDefaultUsername(user.email),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        );
+
+        if (error) throw error;
+
+        setProfile((current) => ({
+          username: data.username ?? current?.username ?? getDefaultUsername(user.email),
+          avatar_url: current?.avatar_url ?? null,
+          bio: current?.bio ?? null,
+          location: current?.location ?? null,
+        }));
+        return;
+      }
+
       const payload = {
         id: user.id,
         email: user.email ?? null,
@@ -108,7 +162,32 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         onConflict: "id",
       });
 
-      if (error) throw error;
+      if (error) {
+        if (isMissingProfileFieldError(error) && data.username !== undefined) {
+          setSchemaMode("legacy");
+          const { error: legacyError } = await supabase.from("profiles").upsert(
+            {
+              id: user.id,
+              email: user.email ?? null,
+              display_name: data.username,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" },
+          );
+
+          if (legacyError) throw legacyError;
+
+          setProfile((current) => ({
+            username: data.username ?? current?.username ?? getDefaultUsername(user.email),
+            avatar_url: current?.avatar_url ?? null,
+            bio: current?.bio ?? null,
+            location: current?.location ?? null,
+          }));
+          return;
+        }
+
+        throw error;
+      }
 
       setProfile((current) => ({
         username: data.username ?? current?.username ?? getDefaultUsername(user.email),
@@ -117,7 +196,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         location: data.location ?? current?.location ?? null,
       }));
     },
-    [user],
+    [schemaMode, user],
   );
 
   const updateAvatar = useCallback(
@@ -125,6 +204,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (!user) throw new Error("User is not authenticated");
 
       const contentType = getContentType(localUri);
+      if (schemaMode === "legacy") {
+        throw new Error("Avatar uploads require the latest database migration.");
+      }
+
       const extension = getExtension(contentType);
       const path = `${user.id}/${Date.now()}.${extension}`;
       const response = await fetch(localUri);
@@ -137,7 +220,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           upsert: true,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        throw new Error("Avatar upload failed. Make sure the avatars storage bucket exists.");
+      }
 
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const publicUrl = data.publicUrl;
@@ -163,7 +248,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
       return publicUrl;
     },
-    [user],
+    [schemaMode, user],
   );
 
   return (
