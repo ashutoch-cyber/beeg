@@ -99,7 +99,7 @@ export default function SignUpScreen() {
             resizeMode="cover"
           />
         </View>
-        <Text style={[styles.brand, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>Bee</Text>
+        <Text style={[styles.brand, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>MealMate</Text>
         <Text style={[styles.tagline, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
           Your AI food tracker
         </Text>

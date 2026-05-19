@@ -267,7 +267,7 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
           <Text style={[styles.headerName, { fontFamily: "Inter_700Bold" }]}>
-            {username || "Bee User"}
+            {username || "MealMate User"}
           </Text>
           <Text style={[styles.headerMeta, { fontFamily: "Inter_400Regular" }]}>
             User since: {formatStoredDate(user?.created_at ?? null) || "Today"}

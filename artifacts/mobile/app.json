@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "bee",
-    "slug": "bee",
+    "name": "MealMate",
+    "slug": "mealmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "bee",
+    "scheme": "mealmate",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -15,18 +15,18 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bee.app"
+      "bundleIdentifier": "com.mealmate.app"
     },
     "android": {
       "backgroundColor": "#4A7C59",
-      "package": "com.bee.app"
+      "package": "com.mealmate.app"
     },
     "web": {
       "favicon": "./assets/images/icon.png",
       "bundler": "metro",
       "output": "static",
-      "name": "Bee",
-      "shortName": "Bee",
+      "name": "MealMate",
+      "shortName": "MealMate",
       "description": "AI-powered food tracking. Snap a photo, get instant nutrition breakdown.",
       "themeColor": "#4A7C59",
       "backgroundColor": "#F5EFE6"

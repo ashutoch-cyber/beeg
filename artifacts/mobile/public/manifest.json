@@ -1,7 +1,7 @@
 {
-  "name": "Calorie Tracker",
-  "short_name": "CalTracker",
-  "description": "AI-powered food calorie tracker",
+  "name": "MealMate",
+  "short_name": "MealMate",
+  "description": "AI-powered food tracking",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5EFE6",

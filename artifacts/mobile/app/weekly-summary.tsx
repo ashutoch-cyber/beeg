@@ -174,7 +174,7 @@ export default function WeeklySummaryScreen() {
             <View style={[styles.cardHeader, { backgroundColor: colors.ctaDarkGreen }]}>
               <View style={styles.cardBrand}>
                 <Feather name="zap" size={22} color={colors.streakLightning} />
-                <Text style={[styles.brandName, { fontFamily: "Inter_700Bold" }]}>Bee</Text>
+                <Text style={[styles.brandName, { fontFamily: "Inter_700Bold" }]}>MealMate</Text>
               </View>
               <Text style={[styles.weekLabel, { fontFamily: "Inter_400Regular" }]}>{weekLabel}</Text>
             </View>
@@ -326,7 +326,7 @@ export default function WeeklySummaryScreen() {
               <View style={styles.watermark}>
                 <Feather name="zap" size={11} color={colors.mutedForeground} />
                 <Text style={[styles.watermarkText, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
-                  Tracked with Bee
+                  Tracked with MealMate
                 </Text>
               </View>
             </View>

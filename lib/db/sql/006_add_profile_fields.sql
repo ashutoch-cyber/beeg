@@ -10,7 +10,7 @@ UPDATE public.profiles
 SET username = COALESCE(username, display_name, split_part(email, '@', 1))
 WHERE username IS NULL;
 
--- Keep the existing Bee signup defaults, and also seed username for new users
+-- Keep the existing MealMate signup defaults, and also seed username for new users
 CREATE OR REPLACE FUNCTION public.handle_new_user_defaults()
 RETURNS trigger
 LANGUAGE plpgsql
