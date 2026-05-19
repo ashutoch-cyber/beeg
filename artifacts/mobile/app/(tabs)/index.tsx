@@ -24,10 +24,29 @@ const MEAL_GROUPS = [
   { key: "breakfast", label: "Breakfast" },
   { key: "lunch", label: "Lunch" },
   { key: "dinner", label: "Dinner" },
-  { key: "snack", label: "Snacks" },
+  { key: "snack", label: "Snack" },
 ] as const;
 
 type MealKey = (typeof MEAL_GROUPS)[number]["key"];
+
+const DATE_PILL_WIDTH = 40;
+const DATE_ITEM_GAP = 8;
+const DATE_ITEM_WIDTH = DATE_PILL_WIDTH + DATE_ITEM_GAP;
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 interface DashboardFoodLog {
   id: string;
@@ -133,7 +152,8 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { todayTotals, goals, foodLogRefreshToken } = useNutrition();
-  const todayDate = useMemo(() => new Date(), []);
+  const dateStripRef = useRef<ScrollView>(null);
+  const [todayDate, setTodayDate] = useState(() => new Date());
   const todayKey = useMemo(() => toDateKey(todayDate), [todayDate]);
   const [visibleMonth, setVisibleMonth] = useState(
     () => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1),
@@ -143,6 +163,7 @@ export default function DashboardScreen() {
   const [loadingSelectedLogs, setLoadingSelectedLogs] = useState(false);
   const [macroTotals, setMacroTotals] = useState<DashboardMacroTotals>(EMPTY_MACRO_TOTALS);
   const [loadingMacroTotals, setLoadingMacroTotals] = useState(true);
+  const [selectedLogsRefreshToken, setSelectedLogsRefreshToken] = useState(0);
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : 0;
@@ -169,6 +190,47 @@ export default function DashboardScreen() {
   const hasSelectedSnaps = MEAL_GROUPS.some(
     (meal) => (groupedSelectedLogs[meal.key]?.length ?? 0) > 0,
   );
+  const visibleMealGroups = useMemo(
+    () =>
+      MEAL_GROUPS.map((meal) => ({
+        ...meal,
+        logs: groupedSelectedLogs[meal.key] ?? [],
+      })).filter((meal) => meal.logs.length > 0),
+    [groupedSelectedLogs],
+  );
+  const mealsCardTitle = useMemo(() => {
+    if (selectedDate === todayKey) return "Today's Meals";
+
+    const [year, month, day] = selectedDate.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    return `Meals — ${WEEKDAY_LABELS[date.getDay()]} ${day} ${MONTH_LABELS[month - 1]}`;
+  }, [selectedDate, todayKey]);
+
+  const scrollTodayIntoView = useCallback(
+    (date: Date, animated = false) => {
+      const todayIndex = date.getDate() - 1;
+      const offset =
+        todayIndex * DATE_ITEM_WIDTH - width / 2 + DATE_ITEM_WIDTH / 2;
+
+      requestAnimationFrame(() => {
+        dateStripRef.current?.scrollTo({
+          x: Math.max(0, offset),
+          animated,
+        });
+      });
+    },
+    [width],
+  );
+
+  useEffect(() => {
+    const isCurrentMonth =
+      visibleMonth.getFullYear() === todayDate.getFullYear() &&
+      visibleMonth.getMonth() === todayDate.getMonth();
+
+    if (isCurrentMonth) {
+      scrollTodayIntoView(todayDate, false);
+    }
+  }, [scrollTodayIntoView, todayDate, visibleMonth]);
 
   useEffect(() => {
     let cancelled = false;
@@ -211,11 +273,21 @@ export default function DashboardScreen() {
     return () => {
       cancelled = true;
     };
-  }, [selectedDate, user]);
+  }, [foodLogRefreshToken, selectedDate, selectedLogsRefreshToken, user]);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
+      const focusedTodayDate = new Date();
+      const focusedTodayKey = toDateKey(focusedTodayDate);
+
+      setTodayDate(focusedTodayDate);
+      setVisibleMonth(
+        new Date(focusedTodayDate.getFullYear(), focusedTodayDate.getMonth(), 1),
+      );
+      setSelectedDate(focusedTodayKey);
+      setSelectedLogsRefreshToken((token) => token + 1);
+      scrollTodayIntoView(focusedTodayDate, false);
 
       const loadTodaysMacroTotals = async () => {
         if (!user) {
@@ -263,26 +335,31 @@ export default function DashboardScreen() {
       return () => {
         cancelled = true;
       };
-    }, [foodLogRefreshToken, user]),
+    }, [foodLogRefreshToken, scrollTodayIntoView, user]),
   );
 
   const changeMonth = (direction: -1 | 1) => {
+    const currentTodayDate = new Date();
+    const currentTodayKey = toDateKey(currentTodayDate);
     const nextMonth = new Date(
       visibleMonth.getFullYear(),
       visibleMonth.getMonth() + direction,
       1,
     );
     const isCurrentMonth =
-      nextMonth.getFullYear() === todayDate.getFullYear() &&
-      nextMonth.getMonth() === todayDate.getMonth();
-    const nextSelectedDay = isCurrentMonth ? todayDate.getDate() : 1;
+      nextMonth.getFullYear() === currentTodayDate.getFullYear() &&
+      nextMonth.getMonth() === currentTodayDate.getMonth();
+    const nextSelectedDate = isCurrentMonth
+      ? currentTodayKey
+      : toDateKey(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1));
 
+    setTodayDate(currentTodayDate);
     setVisibleMonth(nextMonth);
-    setSelectedDate(
-      toDateKey(
-        new Date(nextMonth.getFullYear(), nextMonth.getMonth(), nextSelectedDay),
-      ),
-    );
+    setSelectedDate(nextSelectedDate);
+
+    if (isCurrentMonth) {
+      scrollTodayIntoView(currentTodayDate, false);
+    }
   };
 
   return (
@@ -373,14 +450,14 @@ export default function DashboardScreen() {
         </View>
 
         <ScrollView
+          ref={dateStripRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.dateStripContent}
         >
           {monthDates.map((dateItem) => {
             const selected = dateItem.date === selectedDate;
-            const isToday = dateItem.date === todayKey;
-            const highlighted = selected || isToday;
+            const highlighted = selected;
 
             return (
               <TouchableOpacity
@@ -411,6 +488,22 @@ export default function DashboardScreen() {
             );
           })}
         </ScrollView>
+      </View>
+
+      <View
+        style={[
+          styles.calendarCard,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <Text
+          style={[
+            styles.cardTitle,
+            { color: colors.primaryText, fontFamily: "Inter_700Bold" },
+          ]}
+        >
+          {mealsCardTitle}
+        </Text>
 
         <View style={styles.mealList}>
           {loadingSelectedLogs ? (
@@ -420,59 +513,90 @@ export default function DashboardScreen() {
                 { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
               ]}
             >
-              Loading snaps...
+              Loading meals...
             </Text>
           ) : hasSelectedSnaps ? (
-            MEAL_GROUPS.map((meal) => {
-              const mealLogs = groupedSelectedLogs[meal.key] ?? [];
-              if (mealLogs.length === 0) return null;
+            visibleMealGroups.map((meal, mealIndex) => {
+              const mealLogs = meal.logs;
+              const mealCalories = mealLogs.reduce(
+                (sum, log) => sum + log.calories,
+                0,
+              );
 
               return (
                 <View key={meal.key} style={styles.mealGroup}>
-                  <Text
-                    style={[
-                      styles.mealGroupTitle,
-                      { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
-                    ]}
-                  >
-                    {meal.label}
-                  </Text>
-                  {mealLogs.map((log) => (
-                    <View key={log.id} style={styles.mealRow}>
-                      {log.image_uri ? (
-                        <Image
-                          source={{ uri: log.image_uri }}
-                          style={styles.mealImage}
-                          resizeMode="cover"
-                        />
-                      ) : (
+                  {mealIndex > 0 ? (
+                    <View
+                      style={[
+                        styles.mealGroupDivider,
+                        { backgroundColor: colors.border },
+                      ]}
+                    />
+                  ) : null}
+                  <View style={styles.mealGroupHeader}>
+                    <Text
+                      style={[
+                        styles.mealGroupTitle,
+                        { color: colors.primaryText, fontFamily: "Inter_600SemiBold" },
+                      ]}
+                    >
+                      {meal.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.mealGroupCalories,
+                        { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+                      ]}
+                    >
+                      {Math.round(mealCalories)} kcal
+                    </Text>
+                  </View>
+                  {mealLogs.map((log, logIndex) => (
+                    <View key={log.id}>
+                      {logIndex > 0 ? (
                         <View
                           style={[
-                            styles.mealImagePlaceholder,
-                            { backgroundColor: colors.lightAccentGreen },
+                            styles.mealItemDivider,
+                            { backgroundColor: colors.border },
                           ]}
-                        >
-                          <Feather name="image" size={18} color={colors.mutedForeground} />
+                        />
+                      ) : null}
+                      <View style={styles.mealRow}>
+                        {log.image_uri ? (
+                          <Image
+                            source={{ uri: log.image_uri }}
+                            style={styles.mealImage}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View
+                            style={[
+                              styles.mealImagePlaceholder,
+                              { backgroundColor: colors.cardBackground },
+                            ]}
+                          >
+                            <Feather name="coffee" size={18} color={colors.mutedForeground} />
+                          </View>
+                        )}
+                        <View style={styles.mealInfo}>
+                          <Text
+                            style={[
+                              styles.mealName,
+                              { color: colors.primaryText, fontFamily: "Inter_400Regular" },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {log.dish_name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.mealCalories,
+                              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+                            ]}
+                          >
+                            {Math.round(log.calories)} Cal
+                          </Text>
                         </View>
-                      )}
-                      <View style={styles.mealInfo}>
-                        <Text
-                          style={[
-                            styles.mealName,
-                            { color: colors.bodyText, fontFamily: "Inter_600SemiBold" },
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {log.dish_name}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.mealCalories,
-                            { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
-                          ]}
-                        >
-                          {Math.round(log.calories)} kcal
-                        </Text>
                       </View>
                     </View>
                   ))}
@@ -482,11 +606,11 @@ export default function DashboardScreen() {
           ) : (
             <Text
               style={[
-                styles.emptyText,
+                styles.emptyMealsText,
                 { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
               ]}
             >
-              No snaps logged for this day.
+              No meals logged for this day.
             </Text>
           )}
         </View>
@@ -706,7 +830,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   datePill: {
-    width: 40,
+    width: DATE_PILL_WIDTH,
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
@@ -725,12 +849,12 @@ const styles = StyleSheet.create({
   mealImage: {
     width: 52,
     height: 52,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   mealImagePlaceholder: {
     width: 52,
     height: 52,
-    borderRadius: 12,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -741,4 +865,21 @@ const styles = StyleSheet.create({
   mealName: { fontSize: 14 },
   mealCalories: { fontSize: 12 },
   emptyText: { fontSize: 13 },
+  emptyMealsText: { fontSize: 13, textAlign: "center" },
+  mealGroupHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  mealGroupCalories: { fontSize: 13 },
+  mealGroupDivider: {
+    height: 2,
+    marginBottom: 2,
+  },
+  mealItemDivider: {
+    height: 1,
+    marginLeft: 62,
+    marginBottom: 10,
+  },
 });
