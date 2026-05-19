@@ -71,7 +71,7 @@ export default function ProfileScreen() {
   const [locationError, setLocationError] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const topPadding = insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : insets.bottom;
 
   const showToast = useCallback((message = "Saved successfully!") => {
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: bottomPadding + 118 }}
       >
-        <View style={[styles.profileHeader, { paddingTop: topPadding + 22 }]}>
+        <View style={[styles.profileHeader, { paddingTop: topPadding + 12 }]}>
           <TouchableOpacity style={styles.avatarWrap} onPress={pickAvatar} activeOpacity={0.85}>
             {avatar ? (
               <Image source={{ uri: avatar }} style={styles.avatarImage} resizeMode="cover" />

@@ -33,7 +33,7 @@ export default function GalleryScreen() {
   const [filter, setFilter] = useState<"All" | "Breakfast" | "Lunch" | "Dinner" | "Snack">("All");
   const [query, setQuery] = useState("");
 
-  const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const topPadding = insets.top;
   const isTablet = isTabletWidth(width);
   const isDesktop = isDesktopWidth(width);
   const gridColumns = isDesktop ? 3 : isTablet ? 2 : 1;

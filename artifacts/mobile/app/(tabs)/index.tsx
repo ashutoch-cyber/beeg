@@ -176,7 +176,7 @@ export default function DashboardScreen() {
   const [selectedLogsRefreshToken, setSelectedLogsRefreshToken] = useState(0);
   const [greeting, setGreeting] = useState(() => getGreeting());
 
-  const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const topPadding = insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : 0;
   const isDesktop = isDesktopWidth(width);
   const ringSize = clampSize(width * 0.22, 92, isDesktop ? 132 : 112);
@@ -382,7 +382,7 @@ export default function DashboardScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: topPadding + 16, paddingBottom: bottomPadding + 100 },
+        { paddingTop: topPadding + 12, paddingBottom: bottomPadding + 100 },
         isDesktop && styles.desktopContent,
       ]}
       showsVerticalScrollIndicator={false}
