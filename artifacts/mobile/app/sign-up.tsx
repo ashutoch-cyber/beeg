@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -58,7 +59,11 @@ export default function SignUpScreen() {
     return (
       <View style={[styles.root, styles.successContainer, { backgroundColor: colors.background }]}>
         <View style={[styles.logoWrap, { backgroundColor: colors.darkGreen }]}>
-          <Text style={styles.logoEmoji}>🐝</Text>
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
         </View>
         <Feather name="check-circle" size={56} color={colors.highlightGreen} style={{ marginBottom: 16 }} />
         <Text style={[styles.successTitle, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
@@ -88,7 +93,11 @@ export default function SignUpScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.logoWrap, { backgroundColor: colors.darkGreen }]}>
-          <Text style={styles.logoEmoji}>🐝</Text>
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
         </View>
         <Text style={[styles.brand, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>Bee</Text>
         <Text style={[styles.tagline, { color: colors.mutedForeground, fontFamily: "Inter_400Regular" }]}>
@@ -200,7 +209,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  logoEmoji: { fontSize: 36 },
+  logoImage: { width: "100%", height: "100%", borderRadius: 20 },
   brand: { fontSize: 32, marginBottom: 4 },
   tagline: { fontSize: 14, marginBottom: 32 },
   card: {

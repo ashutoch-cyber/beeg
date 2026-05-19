@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -54,7 +55,11 @@ export default function SignInScreen() {
       >
         {/* Logo / Brand */}
         <View style={[styles.logoWrap, { backgroundColor: colors.darkGreen }]}>
-          <Text style={styles.logoEmoji}>🐝</Text>
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
         </View>
         <Text style={[styles.brand, { color: colors.darkGreen, fontFamily: "Inter_700Bold" }]}>
           Bee
@@ -153,7 +158,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  logoEmoji: { fontSize: 36 },
+  logoImage: { width: "100%", height: "100%", borderRadius: 20 },
   brand: { fontSize: 32, marginBottom: 4 },
   tagline: { fontSize: 14, marginBottom: 32 },
   card: {
