@@ -338,6 +338,7 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         protein: totals.protein,
         carbs: totals.carbs,
         fat: totals.fat,
+        ingredients: log.ingredients ? JSON.stringify(log.ingredients) : null,
         logged_at: loggedAt,
       };
 
