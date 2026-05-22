@@ -18,6 +18,18 @@ import { useNutrition } from "@/context/NutritionContext";
 import { useColors } from "@/hooks/useColors";
 import { clampSize, isDesktopWidth } from "@/lib/responsive";
 
+type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snack";
+type MealTypeKey = "breakfast" | "lunch" | "dinner" | "snack";
+
+function toMealTypeKey(mealType: MealType): MealTypeKey {
+  return mealType.toLowerCase() as MealTypeKey;
+}
+
+function toNumber(value: unknown) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
 export default function LogConfirmScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -31,7 +43,7 @@ export default function LogConfirmScreen() {
   }>();
 
   const result = params.result ? JSON.parse(params.result) : null;
-  const mealType = (params.mealType ?? "Lunch") as "Breakfast" | "Lunch" | "Dinner" | "Snack";
+  const mealType = (params.mealType ?? "Lunch") as MealType;
   const imageUri = params.imageUri || undefined;
   const date = params.date ?? new Date().toISOString().split("T")[0];
 
@@ -49,9 +61,13 @@ export default function LogConfirmScreen() {
     }
     await addLog({
       date,
-      mealType,
-      dishName: result.dishName,
-      imageUri,
+      meal_type: toMealTypeKey(mealType),
+      dish_name: result.dishName,
+      image_uri: imageUri ?? null,
+      calories: toNumber(result.totals?.calories),
+      protein: toNumber(result.totals?.protein),
+      carbs: toNumber(result.totals?.carbs),
+      fat: toNumber(result.totals?.fat),
       ingredients: result.ingredients,
       totals: result.totals,
     });

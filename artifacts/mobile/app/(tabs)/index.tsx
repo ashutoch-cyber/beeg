@@ -161,7 +161,7 @@ export default function DashboardScreen() {
   const { username, avatarUrl, refreshProfile } = useProfile();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { todayTotals, goals, foodLogRefreshToken } = useNutrition();
+  const { todayTotals, goals, lastLogTimestamp } = useNutrition();
   const dateStripRef = useRef<ScrollView>(null);
   const [todayDate, setTodayDate] = useState(() => new Date());
   const todayKey = useMemo(() => toDateKey(todayDate), [todayDate]);
@@ -243,48 +243,44 @@ export default function DashboardScreen() {
     }
   }, [scrollTodayIntoView, todayDate, visibleMonth]);
 
-  useEffect(() => {
-    let cancelled = false;
+  const fetchTodaysMeals = useCallback(async (date: string) => {
+    setLoadingSelectedLogs(true);
 
-    const loadLogsForDate = async () => {
-      if (!user) {
-        setSelectedLogs([]);
-        setLoadingSelectedLogs(false);
-        return;
-      }
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    if (authError) {
+      console.error("fetchTodaysMeals auth error:", authError);
+    }
 
-      setLoadingSelectedLogs(true);
-
-      const { data, error } = await supabase
-        .from("food_logs")
-        .select("id,meal_type,dish_name,image_uri,calories,protein,carbs,fat,logged_at")
-        .eq("user_id", user.id)
-        .eq("date", selectedDate)
-        .order("logged_at", { ascending: true });
-
-      if (cancelled) return;
-
-      if (error) {
-        console.error("Failed to load food logs for selected date", error);
-        setSelectedLogs([]);
-      } else {
-        setSelectedLogs((data ?? []) as DashboardFoodLog[]);
-      }
-
+    if (!authUser) {
+      setSelectedLogs([]);
       setLoadingSelectedLogs(false);
-    };
+      return;
+    }
 
-    loadLogsForDate().catch((error) => {
-      if (cancelled) return;
-      console.error("Failed to load food logs for selected date", error);
+    const { data, error } = await supabase
+      .from("food_logs")
+      .select("id, meal_type, dish_name, image_uri, calories, protein, carbs, fat, logged_at")
+      .eq("user_id", authUser.id)
+      .eq("date", date)
+      .order("logged_at", { ascending: true });
+
+    if (error) {
+      console.error("fetchTodaysMeals error:", error);
+      setSelectedLogs([]);
+    } else {
+      setSelectedLogs((data ?? []) as DashboardFoodLog[]);
+    }
+
+    setLoadingSelectedLogs(false);
+  }, []);
+
+  useEffect(() => {
+    fetchTodaysMeals(selectedDate).catch((error) => {
+      console.error("fetchTodaysMeals error:", error);
       setSelectedLogs([]);
       setLoadingSelectedLogs(false);
     });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [foodLogRefreshToken, selectedDate, selectedLogsRefreshToken, user]);
+  }, [fetchTodaysMeals, lastLogTimestamp, selectedDate, selectedLogsRefreshToken, user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -350,7 +346,7 @@ export default function DashboardScreen() {
       return () => {
         cancelled = true;
       };
-    }, [foodLogRefreshToken, refreshProfile, scrollTodayIntoView, user]),
+    }, [lastLogTimestamp, refreshProfile, scrollTodayIntoView, user]),
   );
 
   const changeMonth = (direction: -1 | 1) => {

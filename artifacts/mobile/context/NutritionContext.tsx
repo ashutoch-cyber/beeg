@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 
 export interface FoodIngredient {
@@ -26,6 +25,30 @@ export interface FoodLog {
     fat: number;
   };
   loggedAt: string;
+}
+
+type MealTypeKey = "breakfast" | "lunch" | "dinner" | "snack";
+type MealTypeTitle = FoodLog["mealType"];
+
+interface AddLogInput {
+  date?: string;
+  meal_type?: MealTypeKey | MealTypeTitle;
+  mealType?: MealTypeKey | MealTypeTitle;
+  dish_name?: string;
+  dishName?: string;
+  image_uri?: string | null;
+  imageUri?: string | null;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  ingredients?: FoodIngredient[];
+  totals?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+  };
 }
 
 export interface DailyGoals {
@@ -56,10 +79,11 @@ interface NutritionContextType {
   todayScans: number;
   monthScans: number;
   foodLogRefreshToken: number;
+  lastLogTimestamp: number;
   streak: number;
   bestStreak: number;
   weekLoggedDays: boolean[];
-  addLog: (log: Omit<FoodLog, "id" | "loggedAt">) => Promise<void>;
+  addLog: (log: AddLogInput) => Promise<void>;
   removeLog: (id: string) => Promise<void>;
   updateGoals: (goals: DailyGoals) => Promise<void>;
   addScan: () => Promise<void>;
@@ -89,17 +113,58 @@ function getTodayDate() {
   return new Date().toISOString().split("T")[0];
 }
 
+function toNumber(value: unknown) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function getContentType(uri: string) {
+  if (uri.startsWith("data:image/png") || uri.toLowerCase().endsWith(".png")) return "image/png";
+  if (uri.startsWith("data:image/webp") || uri.toLowerCase().endsWith(".webp")) return "image/webp";
+  return "image/jpeg";
+}
+
+function getExtension(contentType: string) {
+  if (contentType === "image/png") return "png";
+  if (contentType === "image/webp") return "webp";
+  return "jpg";
+}
+
+function normalizeMealType(mealType?: AddLogInput["meal_type"] | AddLogInput["mealType"]): MealTypeKey {
+  const normalized = `${mealType ?? "snack"}`.toLowerCase();
+  if (normalized === "breakfast" || normalized === "lunch" || normalized === "dinner") {
+    return normalized;
+  }
+  return "snack";
+}
+
+function mealTypeToTitle(mealType: MealTypeKey): MealTypeTitle {
+  if (mealType === "breakfast") return "Breakfast";
+  if (mealType === "lunch") return "Lunch";
+  if (mealType === "dinner") return "Dinner";
+  return "Snack";
+}
+
+function isRemoteImageUri(uri: string) {
+  return uri.startsWith("http://") || uri.startsWith("https://");
+}
+
+function isMealTypeEnumError(error: { message?: string; details?: string }) {
+  const text = `${error.message ?? ""} ${error.details ?? ""}`.toLowerCase();
+  return text.includes("meal_type") && text.includes("enum");
+}
+
 function getCurrentMonth() {
   return new Date().toISOString().slice(0, 7); // "YYYY-MM"
 }
 
 export function NutritionProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
   const [logs, setLogs] = useState<FoodLog[]>([]);
   const [goals, setGoals] = useState<DailyGoals>(DEFAULT_GOALS);
   const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
   const [scanLimit, setScanLimit] = useState(DEFAULT_SCAN_LIMIT);
   const [foodLogRefreshToken, setFoodLogRefreshToken] = useState(0);
+  const [lastLogTimestamp, setLastLogTimestamp] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -189,9 +254,59 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       .reduce((sum, r) => sum + r.count, 0);
   })();
 
-  const addLog = useCallback(async (log: Omit<FoodLog, "id" | "loggedAt">) => {
+  const uploadFoodSnapImage = useCallback(async (imageUri: string | null | undefined, userId: string) => {
+    if (!imageUri) return null;
+    if (isRemoteImageUri(imageUri)) return imageUri;
+
+    try {
+      const contentType = getContentType(imageUri);
+      const extension = getExtension(contentType);
+      const path = `${userId}/${Date.now()}.${extension}`;
+      const response = await fetch(imageUri);
+      const body = await response.blob();
+
+      const { error: uploadError } = await supabase.storage
+        .from("food-snaps")
+        .upload(path, body, {
+          contentType,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error("[addLog] food snap upload failed:", JSON.stringify(uploadError));
+        return null;
+      }
+
+      const { data } = supabase.storage.from("food-snaps").getPublicUrl(path);
+      return data.publicUrl;
+    } catch (error) {
+      console.error("[addLog] food snap upload failed:", error);
+      return null;
+    }
+  }, []);
+
+  const addLog = useCallback(async (log: AddLogInput) => {
+    console.log("[addLog] called with:", JSON.stringify(log));
+
+    const logDate = log.date ?? getTodayDate();
+    const mealType = normalizeMealType(log.meal_type ?? log.mealType);
+    const mealTypeTitle = mealTypeToTitle(mealType);
+    const totals = {
+      calories: toNumber(log.calories ?? log.totals?.calories),
+      protein: toNumber(log.protein ?? log.totals?.protein),
+      carbs: toNumber(log.carbs ?? log.totals?.carbs),
+      fat: toNumber(log.fat ?? log.totals?.fat),
+    };
+    const dishName = log.dish_name ?? log.dishName ?? "Food";
+    const sourceImageUri = log.image_uri ?? log.imageUri ?? null;
+
     const newLog: FoodLog = {
-      ...log,
+      date: logDate,
+      mealType: mealTypeTitle,
+      dishName,
+      imageUri: sourceImageUri ?? undefined,
+      ingredients: log.ingredients ?? [],
+      totals,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       loggedAt: new Date().toISOString(),
     };
@@ -201,33 +316,81 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
-    if (!user) {
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    console.log("[addLog] user id:", authUser?.id);
+
+    if (!authUser || authError) {
+      console.error("addLog: no authenticated user", authError);
       setFoodLogRefreshToken((token) => token + 1);
       return;
     }
 
     try {
-      const { error } = await supabase.from("food_logs").insert({
-        user_id: user.id,
-        date: log.date,
-        meal_type: log.mealType,
-        dish_name: log.dishName,
-        image_uri: log.imageUri ?? null,
-        calories: log.totals.calories,
-        protein: log.totals.protein,
-        carbs: log.totals.carbs,
-        fat: log.totals.fat,
-      });
+      const publicImageUri = await uploadFoodSnapImage(sourceImageUri, authUser.id);
+      const loggedAt = new Date().toISOString();
+      const newRow = {
+        user_id: authUser.id,
+        date: logDate,
+        meal_type: mealType,
+        dish_name: dishName,
+        image_uri: publicImageUri,
+        calories: totals.calories,
+        protein: totals.protein,
+        carbs: totals.carbs,
+        fat: totals.fat,
+        logged_at: loggedAt,
+      };
+
+      console.log("[addLog] inserting row:", JSON.stringify(newRow));
+
+      let { data, error } = await supabase
+        .from("food_logs")
+        .insert(newRow)
+        .select()
+        .single();
+
+      if (error && isMealTypeEnumError(error)) {
+        console.error("[addLog] SUPABASE ERROR:", JSON.stringify(error));
+        const legacyMealTypeRow = {
+          ...newRow,
+          meal_type: mealTypeTitle,
+        };
+
+        console.log("[addLog] retrying insert with legacy meal_type:", JSON.stringify(legacyMealTypeRow));
+        const retryResult = await supabase
+          .from("food_logs")
+          .insert(legacyMealTypeRow)
+          .select()
+          .single();
+
+        data = retryResult.data;
+        error = retryResult.error;
+      }
 
       if (error) {
-        console.error("Failed to sync food log to Supabase", error);
+        console.error("addLog: Supabase insert failed:", error);
+        console.error("[addLog] SUPABASE ERROR:", JSON.stringify(error));
+      } else {
+        console.log("addLog: saved to Supabase successfully", data);
+        console.log("[addLog] SUCCESS, inserted id:", data?.id);
+        setLastLogTimestamp(Date.now());
+        if (publicImageUri && publicImageUri !== sourceImageUri) {
+          setLogs((prev) => {
+            const updated = prev.map((item) =>
+              item.id === newLog.id ? { ...item, imageUri: publicImageUri } : item
+            );
+            AsyncStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(updated)).catch(() => {});
+            return updated;
+          });
+        }
       }
     } catch (error) {
-      console.error("Failed to sync food log to Supabase", error);
+      console.error("addLog: Supabase insert failed:", error);
+      console.error("[addLog] SUPABASE ERROR:", JSON.stringify(error));
     } finally {
       setFoodLogRefreshToken((token) => token + 1);
     }
-  }, [user]);
+  }, [uploadFoodSnapImage]);
 
   const removeLog = useCallback(async (id: string) => {
     setLogs((prev) => {
@@ -270,6 +433,7 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         todayScans,
         monthScans,
         foodLogRefreshToken,
+        lastLogTimestamp,
         streak,
         bestStreak,
         weekLoggedDays,
